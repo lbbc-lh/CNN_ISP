@@ -1,8 +1,10 @@
 fastapi
 uvicorn
+jinja2
 numpy
 opencv-python
 torch
 transformers
 pillow
 pytest
+httpx

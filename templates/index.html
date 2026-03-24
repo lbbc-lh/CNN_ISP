@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CNN IQA Debug UI</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">ISP Debug Dashboard</p>
+          <h1>CNN Image Quality Analyzer</h1>
+          <p class="subtitle">
+            Upload an image, run semantic-aware quality analysis, and inspect overlay, masks,
+            weights, metrics, and raw JSON in one place.
+          </p>
+        </div>
+        <div class="controls">
+          <label class="upload">
+            <span>Select Image</span>
+            <input id="file-input" type="file" accept="image/*" />
+          </label>
+          <button id="analyze-button" disabled>Analyze</button>
+          <p id="status-text" class="status">Choose an image to begin.</p>
+        </div>
+      </header>
+
+      <section class="grid visuals">
+        <article class="card">
+          <div class="card-head">
+            <h2>Source</h2>
+            <span id="source-meta" class="meta">No image</span>
+          </div>
+          <div class="image-frame"><img id="source-image" alt="source preview" /></div>
+        </article>
+        <article class="card">
+          <div class="card-head">
+            <h2>Overlay</h2>
+            <span id="request-id" class="meta">Pending</span>
+          </div>
+          <div class="image-frame"><img id="overlay-image" alt="segmentation overlay" /></div>
+        </article>
+      </section>
+
+      <section class="grid summary">
+        <article class="card score-card">
+          <h2>Final Score</h2>
+          <p id="final-score" class="score">--</p>
+          <div id="missing-regions" class="pill-row"></div>
+        </article>
+        <article class="card">
+          <h2>Suggestions</h2>
+          <ul id="suggestions-list" class="list"></ul>
+        </article>
+        <article class="card">
+          <h2>Effective Weights</h2>
+          <dl id="weights-grid" class="metrics-grid"></dl>
+        </article>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Region Masks</h2>
+          <span class="meta">person / sky / vegetation / background</span>
+        </div>
+        <div class="mask-grid">
+          <article class="mask-card">
+            <h3>Person</h3>
+            <img id="mask-person" alt="person mask" />
+          </article>
+          <article class="mask-card">
+            <h3>Sky</h3>
+            <img id="mask-sky" alt="sky mask" />
+          </article>
+          <article class="mask-card">
+            <h3>Vegetation</h3>
+            <img id="mask-vegetation" alt="vegetation mask" />
+          </article>
+          <article class="mask-card">
+            <h3>Background</h3>
+            <img id="mask-background" alt="background mask" />
+          </article>
+        </div>
+      </section>
+
+      <section class="grid metrics-section">
+        <article class="card">
+          <h2>Global Metrics</h2>
+          <dl id="global-metrics" class="metrics-grid"></dl>
+        </article>
+        <article class="card">
+          <h2>Detected Regions</h2>
+          <div id="detected-regions" class="region-list"></div>
+        </article>
+      </section>
+
+      <section class="card">
+        <h2>Region Metrics</h2>
+        <div class="table-wrap">
+          <table id="region-metrics-table">
+            <thead>
+              <tr>
+                <th>Region</th>
+                <th>Valid</th>
+                <th>Coverage</th>
+                <th>Sharpness</th>
+                <th>Noise</th>
+                <th>Exposure</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Raw JSON</h2>
+        <pre id="raw-json" class="json-viewer">No analysis yet.</pre>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
