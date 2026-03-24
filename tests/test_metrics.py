@@ -7,7 +7,8 @@ from metrics import compute_region_metrics
 
 
 def test_compute_exposure_returns_masked_v_mean():
-    image = np.full((4, 4, 3), 128, dtype=np.uint8)
+    image = np.zeros((4, 4, 3), dtype=np.uint8)
+    image[:2, :2] = 128
     mask = np.zeros((4, 4), dtype=bool)
     mask[:2, :2] = True
     assert compute_exposure(image, mask) == pytest.approx(128.0)
@@ -36,4 +37,8 @@ def test_compute_region_metrics_preserves_coverage_for_tiny_invalid_mask():
     mask[0:2, 0:2] = True
     result = compute_region_metrics(image, mask)
     assert result["valid"] is False
+    assert result["sharpness"] == 0.0
+    assert result["noise"] == 0.0
+    assert result["exposure"] == 0.0
+    assert result["score"] == 0.0
     assert result["coverage_ratio"] == pytest.approx(4 / 256)
