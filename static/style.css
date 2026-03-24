@@ -10,6 +10,11 @@
   --success: #1f7a4d;
   --error: #a61b29;
   --shadow: 0 18px 40px rgba(45, 37, 24, 0.08);
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
 }
 
 * {
@@ -28,15 +33,15 @@ body {
 .page {
   max-width: 1500px;
   margin: 0 auto;
-  padding: 24px;
+  padding: var(--space-5);
 }
 
 .hero {
   display: grid;
   grid-template-columns: 2.2fr 1fr;
-  gap: 20px;
-  margin-bottom: 20px;
-  padding: 24px;
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
   background: linear-gradient(135deg, #fff7ea, #f8f3ea);
   border: 1px solid var(--line);
   border-radius: 24px;
@@ -67,14 +72,14 @@ body {
 
 .controls {
   display: grid;
-  gap: 14px;
+  gap: var(--space-3);
   align-content: start;
 }
 
 .upload {
   display: inline-grid;
-  gap: 10px;
-  padding: 16px;
+  gap: var(--space-3);
+  padding: var(--space-4);
   background: var(--panel);
   border: 1px dashed var(--line);
   border-radius: 18px;
@@ -110,8 +115,7 @@ button:disabled {
 
 .grid {
   display: grid;
-  gap: 18px;
-  margin-bottom: 18px;
+  gap: var(--space-4);
 }
 
 .visuals {
@@ -130,7 +134,7 @@ button:disabled {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 22px;
-  padding: 18px;
+  padding: var(--space-4);
   box-shadow: var(--shadow);
 }
 
@@ -144,7 +148,7 @@ button:disabled {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .meta {
@@ -178,7 +182,7 @@ button:disabled {
 .pill-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .pill {
@@ -205,13 +209,13 @@ button:disabled {
   margin: 0;
   padding-left: 18px;
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 16px;
+  gap: var(--space-3) var(--space-4);
   margin: 0;
 }
 
@@ -228,7 +232,7 @@ button:disabled {
 .mask-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .structure-grid {
@@ -236,7 +240,7 @@ button:disabled {
 }
 
 .mask-card {
-  padding: 14px;
+  padding: var(--space-4);
   border-radius: 18px;
   background: var(--panel-alt);
   min-height: 220px;
@@ -249,11 +253,11 @@ button:disabled {
 
 .region-list {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .region-item {
-  padding: 14px;
+  padding: var(--space-4);
   border-radius: 16px;
   background: var(--panel-alt);
   border: 1px solid var(--line);
@@ -275,7 +279,7 @@ table {
 
 th,
 td {
-  padding: 12px 10px;
+  padding: var(--space-3) 10px;
   border-bottom: 1px solid var(--line);
   text-align: left;
   font-size: 0.94rem;
@@ -289,6 +293,7 @@ th {
 .json-viewer {
   margin: 0;
   padding: 16px;
+  min-height: 320px;
   border-radius: 18px;
   background: #191917;
   color: #f8f8f2;
@@ -297,12 +302,54 @@ th {
   line-height: 1.5;
 }
 
+.tabs {
+  display: inline-flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+  padding: var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 253, 248, 0.82);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.tab {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+.tab.is-active {
+  background: linear-gradient(135deg, #1f2937, #334155);
+  color: #fff;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.is-active {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.tab-panel > section {
+  margin: 0;
+}
+
 @media (max-width: 1100px) {
   .hero,
   .summary,
   .metrics-section,
   .visuals {
     grid-template-columns: 1fr;
+  }
+
+  .tabs {
+    display: flex;
   }
 
   .mask-grid {
@@ -316,7 +363,7 @@ th {
 
 @media (max-width: 700px) {
   .page {
-    padding: 14px;
+    padding: var(--space-3);
   }
 
   .mask-grid {

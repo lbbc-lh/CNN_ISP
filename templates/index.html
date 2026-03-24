@@ -27,145 +27,160 @@
         </div>
       </header>
 
-      <section class="grid visuals">
-        <article class="card">
+      <nav class="tabs" aria-label="Debug sections">
+        <button type="button" class="tab is-active" data-tab="overview">Overview</button>
+        <button type="button" class="tab" data-tab="semantic">Semantic</button>
+        <button type="button" class="tab" data-tab="structure">Structure</button>
+        <button type="button" class="tab" data-tab="json">Raw JSON</button>
+      </nav>
+
+      <section class="tab-panel is-active" data-panel="overview">
+        <section class="grid visuals">
+          <article class="card">
+            <div class="card-head">
+              <h2>Source</h2>
+              <span id="source-meta" class="meta">No image</span>
+            </div>
+            <div class="image-frame"><img id="source-image" alt="source preview" /></div>
+          </article>
+          <article class="card">
+            <div class="card-head">
+              <h2>Semantic Overlay</h2>
+              <span id="request-id" class="meta">Pending</span>
+            </div>
+            <div class="image-frame"><img id="overlay-image" alt="segmentation overlay" /></div>
+          </article>
+          <article class="card">
+            <div class="card-head">
+              <h2>Structure Overlay</h2>
+              <span class="meta">flat / edge / texture</span>
+            </div>
+            <div class="image-frame"><img id="structure-overlay-image" alt="structure overlay" /></div>
+          </article>
+        </section>
+
+        <section class="grid summary">
+          <article class="card score-card">
+            <h2>Final Score</h2>
+            <p id="final-score" class="score">--</p>
+            <div id="missing-regions" class="pill-row"></div>
+          </article>
+          <article class="card">
+            <h2>Suggestions</h2>
+            <ul id="suggestions-list" class="list"></ul>
+          </article>
+          <article class="card">
+            <h2>Effective Weights</h2>
+            <dl id="weights-grid" class="metrics-grid"></dl>
+          </article>
+        </section>
+
+        <section class="grid metrics-section">
+          <article class="card">
+            <h2>Global Metrics</h2>
+            <dl id="global-metrics" class="metrics-grid"></dl>
+          </article>
+          <article class="card">
+            <h2>Detected Regions</h2>
+            <div id="detected-regions" class="region-list"></div>
+          </article>
+        </section>
+      </section>
+
+      <section class="tab-panel" data-panel="semantic">
+        <section class="card">
           <div class="card-head">
-            <h2>Source</h2>
-            <span id="source-meta" class="meta">No image</span>
+            <h2>Semantic Masks</h2>
+            <span class="meta">person / sky / vegetation / background</span>
           </div>
-          <div class="image-frame"><img id="source-image" alt="source preview" /></div>
-        </article>
-        <article class="card">
+          <div class="mask-grid">
+            <article class="mask-card">
+              <h3>Person</h3>
+              <img id="mask-person" alt="person mask" />
+            </article>
+            <article class="mask-card">
+              <h3>Sky</h3>
+              <img id="mask-sky" alt="sky mask" />
+            </article>
+            <article class="mask-card">
+              <h3>Vegetation</h3>
+              <img id="mask-vegetation" alt="vegetation mask" />
+            </article>
+            <article class="mask-card">
+              <h3>Background</h3>
+              <img id="mask-background" alt="background mask" />
+            </article>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Semantic Region Metrics</h2>
+          <div class="table-wrap">
+            <table id="region-metrics-table">
+              <thead>
+                <tr>
+                  <th>Region</th>
+                  <th>Valid</th>
+                  <th>Coverage</th>
+                  <th>Sharpness</th>
+                  <th>Noise</th>
+                  <th>Exposure</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="tab-panel" data-panel="structure">
+        <section class="card">
           <div class="card-head">
-            <h2>Overlay</h2>
-            <span id="request-id" class="meta">Pending</span>
+            <h2>Structure Masks</h2>
+            <span class="meta">gradient + local variance partition</span>
           </div>
-          <div class="image-frame"><img id="overlay-image" alt="segmentation overlay" /></div>
-        </article>
-        <article class="card">
-          <div class="card-head">
-            <h2>Structure Overlay</h2>
-            <span class="meta">flat / edge / texture</span>
+          <div class="mask-grid structure-grid">
+            <article class="mask-card">
+              <h3>Flat</h3>
+              <img id="mask-flat" alt="flat mask" />
+            </article>
+            <article class="mask-card">
+              <h3>Edge</h3>
+              <img id="mask-edge" alt="edge mask" />
+            </article>
+            <article class="mask-card">
+              <h3>Texture</h3>
+              <img id="mask-texture" alt="texture mask" />
+            </article>
           </div>
-          <div class="image-frame"><img id="structure-overlay-image" alt="structure overlay" /></div>
-        </article>
+        </section>
+
+        <section class="card">
+          <h2>Semantic Structure Metrics</h2>
+          <div class="table-wrap">
+            <table id="semantic-structure-table">
+              <thead>
+                <tr>
+                  <th>Semantic Region</th>
+                  <th>Valid</th>
+                  <th>Coverage</th>
+                  <th>Flat Noise</th>
+                  <th>Edge Sharpness</th>
+                  <th>Texture Clarity</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
       </section>
 
-      <section class="grid summary">
-        <article class="card score-card">
-          <h2>Final Score</h2>
-          <p id="final-score" class="score">--</p>
-          <div id="missing-regions" class="pill-row"></div>
-        </article>
-        <article class="card">
-          <h2>Suggestions</h2>
-          <ul id="suggestions-list" class="list"></ul>
-        </article>
-        <article class="card">
-          <h2>Effective Weights</h2>
-          <dl id="weights-grid" class="metrics-grid"></dl>
-        </article>
-      </section>
-
-      <section class="card">
-        <div class="card-head">
-          <h2>Region Masks</h2>
-          <span class="meta">person / sky / vegetation / background</span>
-        </div>
-        <div class="mask-grid">
-          <article class="mask-card">
-            <h3>Person</h3>
-            <img id="mask-person" alt="person mask" />
-          </article>
-          <article class="mask-card">
-            <h3>Sky</h3>
-            <img id="mask-sky" alt="sky mask" />
-          </article>
-          <article class="mask-card">
-            <h3>Vegetation</h3>
-            <img id="mask-vegetation" alt="vegetation mask" />
-          </article>
-          <article class="mask-card">
-            <h3>Background</h3>
-            <img id="mask-background" alt="background mask" />
-          </article>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="card-head">
-          <h2>Structure Masks</h2>
-          <span class="meta">gradient + local variance partition</span>
-        </div>
-        <div class="mask-grid structure-grid">
-          <article class="mask-card">
-            <h3>Flat</h3>
-            <img id="mask-flat" alt="flat mask" />
-          </article>
-          <article class="mask-card">
-            <h3>Edge</h3>
-            <img id="mask-edge" alt="edge mask" />
-          </article>
-          <article class="mask-card">
-            <h3>Texture</h3>
-            <img id="mask-texture" alt="texture mask" />
-          </article>
-        </div>
-      </section>
-
-      <section class="grid metrics-section">
-        <article class="card">
-          <h2>Global Metrics</h2>
-          <dl id="global-metrics" class="metrics-grid"></dl>
-        </article>
-        <article class="card">
-          <h2>Detected Regions</h2>
-          <div id="detected-regions" class="region-list"></div>
-        </article>
-      </section>
-
-      <section class="card">
-        <h2>Semantic Structure Metrics</h2>
-        <div class="table-wrap">
-          <table id="semantic-structure-table">
-            <thead>
-              <tr>
-                <th>Semantic Region</th>
-                <th>Valid</th>
-                <th>Coverage</th>
-                <th>Flat Noise</th>
-                <th>Edge Sharpness</th>
-                <th>Texture Clarity</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>Region Metrics</h2>
-        <div class="table-wrap">
-          <table id="region-metrics-table">
-            <thead>
-              <tr>
-                <th>Region</th>
-                <th>Valid</th>
-                <th>Coverage</th>
-                <th>Sharpness</th>
-                <th>Noise</th>
-                <th>Exposure</th>
-                <th>Score</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>Raw JSON</h2>
-        <pre id="raw-json" class="json-viewer">No analysis yet.</pre>
+      <section class="tab-panel" data-panel="json">
+        <section class="card">
+          <h2>Raw JSON</h2>
+          <pre id="raw-json" class="json-viewer">No analysis yet.</pre>
+        </section>
       </section>
     </main>
 

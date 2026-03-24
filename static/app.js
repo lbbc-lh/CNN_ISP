@@ -15,6 +15,8 @@ const detectedRegions = document.getElementById("detected-regions");
 const regionMetricsTable = document.querySelector("#region-metrics-table tbody");
 const semanticStructureTable = document.querySelector("#semantic-structure-table tbody");
 const rawJson = document.getElementById("raw-json");
+const tabs = document.querySelectorAll(".tab");
+const tabPanels = document.querySelectorAll(".tab-panel");
 
 const maskEls = {
   person: document.getElementById("mask-person"),
@@ -30,6 +32,15 @@ const structureMaskEls = {
 };
 
 let selectedFile = null;
+
+function setActiveTab(tabName) {
+  tabs.forEach((tab) => {
+    tab.classList.toggle("is-active", tab.dataset.tab === tabName);
+  });
+  tabPanels.forEach((panel) => {
+    panel.classList.toggle("is-active", panel.dataset.panel === tabName);
+  });
+}
 
 function toDataUrl(base64Data) {
   return `data:image/png;base64,${base64Data}`;
@@ -226,3 +237,7 @@ fileInput.addEventListener("change", () => {
 });
 
 analyzeButton.addEventListener("click", analyze);
+
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => setActiveTab(tab.dataset.tab));
+});
