@@ -7,7 +7,10 @@ import numpy as np
 def _as_bool_mask(mask: np.ndarray | None, image_shape: tuple[int, ...]) -> np.ndarray:
     if mask is None:
         return np.ones(image_shape[:2], dtype=bool)
-    return np.asarray(mask, dtype=bool)
+    mask_array = np.asarray(mask, dtype=bool)
+    if mask_array.ndim != 2 or mask_array.shape != tuple(image_shape[:2]):
+        raise ValueError("mask must be 2-D and match image height/width")
+    return mask_array
 
 
 def _masked_gray(image: np.ndarray, mask: np.ndarray | None) -> np.ndarray:
