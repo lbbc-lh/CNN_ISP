@@ -8,18 +8,25 @@ from metrics import compute_region_metrics
 
 def test_compute_exposure_returns_masked_v_mean():
     image = np.zeros((4, 4, 3), dtype=np.uint8)
-    image[:2, :2] = 128
+    image[:] = [250, 250, 250]
+    image[:2, :2] = [10, 40, 200]
     mask = np.zeros((4, 4), dtype=bool)
     mask[:2, :2] = True
-    assert compute_exposure(image, mask) == pytest.approx(128.0)
+    assert compute_exposure(image, mask) == pytest.approx(200.0)
 
 
 def test_compute_noise_uses_grayscale_std_inside_mask():
     image = np.zeros((4, 4, 3), dtype=np.uint8)
-    image[:2, :2] = 100
+    image[:2, :2] = np.array(
+        [
+            [[255, 0, 0], [0, 255, 0]],
+            [[0, 0, 255], [255, 255, 255]],
+        ],
+        dtype=np.uint8,
+    )
     mask = np.zeros((4, 4), dtype=bool)
     mask[:2, :2] = True
-    assert compute_noise(image, mask) == pytest.approx(0.0)
+    assert compute_noise(image, mask) == pytest.approx(85.3185213657655)
 
 
 def test_compute_region_metrics_marks_empty_mask_invalid():
