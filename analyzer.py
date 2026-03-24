@@ -15,6 +15,8 @@ from PIL import Image
 from metrics import compute_region_metrics
 from segmentation import SegmentationEngine
 from segmentation import TARGET_REGIONS
+from structure_analysis import analyze_structure
+from structure_analysis import compute_semantic_structure_metrics
 
 LOGGER = logging.getLogger(__name__)
 
@@ -103,14 +105,16 @@ class ImageQualityAnalyzer:
         request_id: str,
         overlay: np.ndarray,
         mask_visualizations: dict[str, np.ndarray],
+        prefix: str = "",
     ) -> dict[str, str]:
         saved_files: dict[str, str] = {}
-        overlay_path = self.output_dir / f"{request_id}_overlay.png"
+        stem_prefix = f"{prefix}_" if prefix else ""
+        overlay_path = self.output_dir / f"{request_id}_{stem_prefix}overlay.png"
         cv2.imwrite(str(overlay_path), overlay)
         saved_files["overlay"] = str(overlay_path.relative_to(self.output_dir.parent))
 
         for region, mask_image in mask_visualizations.items():
-            path = self.output_dir / f"{request_id}_{region}_mask.png"
+            path = self.output_dir / f"{request_id}_{stem_prefix}{region}_mask.png"
             cv2.imwrite(str(path), mask_image)
             saved_files[region] = str(path.relative_to(self.output_dir.parent))
 
@@ -178,12 +182,20 @@ class ImageQualityAnalyzer:
         LOGGER.info("Starting image analysis for request %s", request_id)
         image = decode_base64_image(payload)
         segmentation_result = self.segmentation_engine.segment(image)
+        structure_result = analyze_structure(image)
 
         global_metrics = compute_region_metrics(image)
         region_metrics = {
             region: compute_region_metrics(image, segmentation_result.masks[region])
             for region in TARGET_REGIONS
         }
+        semantic_structure_metrics = compute_semantic_structure_metrics(
+            image,
+            segmentation_result.masks,
+            structure_result.masks,
+            structure_result.gradient_map,
+            structure_result.variance_map,
+        )
 
         final_score, effective_weights, score_breakdown, missing_regions = self._compute_final_score(
             global_metrics,
@@ -195,11 +207,18 @@ class ImageQualityAnalyzer:
             segmentation_result.overlay,
             segmentation_result.mask_visualizations,
         )
+        structure_saved_files = self._save_visualizations(
+            request_id,
+            structure_result.overlay,
+            structure_result.mask_visualizations,
+            prefix="structure",
+        )
 
         result = {
             "request_id": request_id,
             "global_metrics": global_metrics,
             "region_metrics": region_metrics,
+            "semantic_structure_metrics": semantic_structure_metrics,
             "final_score": final_score,
             "effective_weights": effective_weights,
             "score_breakdown": score_breakdown,
@@ -213,6 +232,14 @@ class ImageQualityAnalyzer:
                     for region in TARGET_REGIONS
                 },
                 "saved_files": saved_files,
+            },
+            "structure_visualizations": {
+                "overlay_base64": encode_image_to_base64(structure_result.overlay),
+                "mask_base64": {
+                    region: encode_image_to_base64(structure_result.mask_visualizations[region])
+                    for region in structure_result.mask_visualizations
+                },
+                "saved_files": structure_saved_files,
             },
         }
 

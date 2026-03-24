@@ -5,6 +5,7 @@
 - 输入 base64 图片
 - 使用 `SegFormer` 做语义分割
 - 计算全局和区域级图像质量指标
+- 基于梯度 + 局部方差做 `flat / edge / texture` 结构分区
 - 输出最终评分与调参建议
 - 返回 overlay 和各区域 mask
 - 提供 FastAPI 接口
@@ -18,6 +19,7 @@ cnn_iqa_demo/
 ├── main.py
 ├── metrics.py
 ├── segmentation.py
+├── structure_analysis.py
 ├── static/
 ├── templates/
 ├── requirements.txt
@@ -79,6 +81,22 @@ only valid regions participate in scoring
 effective weights are re-normalized across valid regions
 ```
 
+## Structure Analysis
+
+除了语义区域，本项目还会基于灰度梯度和局部方差把整张图划分成：
+
+- `flat`
+- `edge`
+- `texture`
+
+这部分结果会输出：
+
+- `structure_metrics`
+- `structure_visualizations.overlay_base64`
+- `structure_visualizations.mask_base64.flat`
+- `structure_visualizations.mask_base64.edge`
+- `structure_visualizations.mask_base64.texture`
+
 ## Install
 
 ```bash
@@ -109,7 +127,7 @@ python main.py
 浏览器调试界面：
 
 - `http://127.0.0.1:8000/`
-- 可直接上传图片并查看 overlay、mask、分数、动态权重、缺失区域、建议和原始 JSON
+- 可直接上传图片并查看语义 overlay、结构 overlay、mask、分数、动态权重、缺失区域、建议和原始 JSON
 
 ## API
 
@@ -154,6 +172,11 @@ Response:
     "vegetation": {},
     "background": {}
   },
+  "structure_metrics": {
+    "flat": {},
+    "edge": {},
+    "texture": {}
+  },
   "final_score": 84.3,
   "effective_weights": {
     "person": 0.625,
@@ -196,6 +219,14 @@ Response:
       "sky": "outputs/20260324_abcd1234_sky_mask.png",
       "vegetation": "outputs/20260324_abcd1234_vegetation_mask.png",
       "background": "outputs/20260324_abcd1234_background_mask.png"
+    }
+  },
+  "structure_visualizations": {
+    "overlay_base64": "...",
+    "mask_base64": {
+      "flat": "...",
+      "edge": "...",
+      "texture": "..."
     }
   }
 }

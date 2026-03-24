@@ -42,6 +42,13 @@
           </div>
           <div class="image-frame"><img id="overlay-image" alt="segmentation overlay" /></div>
         </article>
+        <article class="card">
+          <div class="card-head">
+            <h2>Structure Overlay</h2>
+            <span class="meta">flat / edge / texture</span>
+          </div>
+          <div class="image-frame"><img id="structure-overlay-image" alt="structure overlay" /></div>
+        </article>
       </section>
 
       <section class="grid summary">
@@ -85,6 +92,27 @@
         </div>
       </section>
 
+      <section class="card">
+        <div class="card-head">
+          <h2>Structure Masks</h2>
+          <span class="meta">gradient + local variance partition</span>
+        </div>
+        <div class="mask-grid structure-grid">
+          <article class="mask-card">
+            <h3>Flat</h3>
+            <img id="mask-flat" alt="flat mask" />
+          </article>
+          <article class="mask-card">
+            <h3>Edge</h3>
+            <img id="mask-edge" alt="edge mask" />
+          </article>
+          <article class="mask-card">
+            <h3>Texture</h3>
+            <img id="mask-texture" alt="texture mask" />
+          </article>
+        </div>
+      </section>
+
       <section class="grid metrics-section">
         <article class="card">
           <h2>Global Metrics</h2>
@@ -94,6 +122,25 @@
           <h2>Detected Regions</h2>
           <div id="detected-regions" class="region-list"></div>
         </article>
+      </section>
+
+      <section class="card">
+        <h2>Semantic Structure Metrics</h2>
+        <div class="table-wrap">
+          <table id="semantic-structure-table">
+            <thead>
+              <tr>
+                <th>Semantic Region</th>
+                <th>Valid</th>
+                <th>Coverage</th>
+                <th>Flat Noise</th>
+                <th>Edge Sharpness</th>
+                <th>Texture Clarity</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </section>
 
       <section class="card">

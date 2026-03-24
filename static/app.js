@@ -3,6 +3,7 @@ const analyzeButton = document.getElementById("analyze-button");
 const statusText = document.getElementById("status-text");
 const sourceImage = document.getElementById("source-image");
 const overlayImage = document.getElementById("overlay-image");
+const structureOverlayImage = document.getElementById("structure-overlay-image");
 const sourceMeta = document.getElementById("source-meta");
 const requestId = document.getElementById("request-id");
 const finalScore = document.getElementById("final-score");
@@ -12,6 +13,7 @@ const weightsGrid = document.getElementById("weights-grid");
 const globalMetrics = document.getElementById("global-metrics");
 const detectedRegions = document.getElementById("detected-regions");
 const regionMetricsTable = document.querySelector("#region-metrics-table tbody");
+const semanticStructureTable = document.querySelector("#semantic-structure-table tbody");
 const rawJson = document.getElementById("raw-json");
 
 const maskEls = {
@@ -19,6 +21,12 @@ const maskEls = {
   sky: document.getElementById("mask-sky"),
   vegetation: document.getElementById("mask-vegetation"),
   background: document.getElementById("mask-background"),
+};
+
+const structureMaskEls = {
+  flat: document.getElementById("mask-flat"),
+  edge: document.getElementById("mask-edge"),
+  texture: document.getElementById("mask-texture"),
 };
 
 let selectedFile = null;
@@ -97,6 +105,27 @@ function renderRegionMetrics(regionMetrics) {
   }
 }
 
+function renderSemanticStructureTable(target, metricsByRegion) {
+  target.innerHTML = "";
+  for (const [region, metrics] of Object.entries(metricsByRegion)) {
+    const row = document.createElement("tr");
+    const values = [
+      region,
+      metrics.valid ? "yes" : "no",
+      formatNumber(metrics.coverage_ratio),
+      formatNumber(metrics.flat_noise),
+      formatNumber(metrics.edge_sharpness),
+      formatNumber(metrics.texture_clarity),
+    ];
+    for (const value of values) {
+      const td = document.createElement("td");
+      td.textContent = value;
+      row.appendChild(td);
+    }
+    target.appendChild(row);
+  }
+}
+
 function renderDetectedRegions(items) {
   detectedRegions.innerHTML = "";
   if (!items.length) {
@@ -125,12 +154,18 @@ function renderResults(result) {
   renderMetricGrid(weightsGrid, result.effective_weights || {});
   renderMetricGrid(globalMetrics, result.global_metrics || {});
   renderRegionMetrics(result.region_metrics || {});
+  renderSemanticStructureTable(semanticStructureTable, result.semantic_structure_metrics || {});
   renderDetectedRegions(result.detected_regions || []);
   rawJson.textContent = JSON.stringify(result, null, 2);
 
   overlayImage.src = toDataUrl(result.visualizations.overlay_base64);
+  structureOverlayImage.src = toDataUrl(result.structure_visualizations.overlay_base64);
   for (const [region, el] of Object.entries(maskEls)) {
     const value = result.visualizations.mask_base64[region];
+    el.src = toDataUrl(value);
+  }
+  for (const [region, el] of Object.entries(structureMaskEls)) {
+    const value = result.structure_visualizations.mask_base64[region];
     el.src = toDataUrl(value);
   }
 }

@@ -59,6 +59,7 @@ def test_analyze_image_returns_expected_top_level_keys(sample_base64, tmp_path: 
     assert "request_id" in result
     assert "global_metrics" in result
     assert "region_metrics" in result
+    assert "semantic_structure_metrics" in result
     assert "final_score" in result
     assert "effective_weights" in result
     assert "score_breakdown" in result
@@ -66,8 +67,11 @@ def test_analyze_image_returns_expected_top_level_keys(sample_base64, tmp_path: 
     assert "detected_regions" in result
     assert "suggestions" in result
     assert "visualizations" in result
+    assert "structure_visualizations" in result
     assert set(result["region_metrics"].keys()) == {"person", "sky", "vegetation", "background"}
     assert set(result["visualizations"]["mask_base64"].keys()) == {"person", "sky", "vegetation", "background"}
+    assert set(result["semantic_structure_metrics"].keys()) == {"person", "sky", "vegetation", "background"}
+    assert set(result["structure_visualizations"]["mask_base64"].keys()) == {"flat", "edge", "texture"}
 
 
 def test_final_score_renormalizes_only_across_valid_regions(sample_base64, tmp_path: Path):
