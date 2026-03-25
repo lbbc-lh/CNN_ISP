@@ -973,13 +973,13 @@
             <span class="section-tag">把“看图调参”变成可解释工具</span>
           </div>
           <p class="lede reveal">
-            传统 ISP 调试是重人力、长周期、强经验依赖的流程。这个项目要做的不是替代工程师，而是先让算法自动跑完第一轮，再把人工精力留给真正有价值的微调。
+            传统 ISP 调试重人力、长周期、强经验依赖。这个项目不替代工程师，而是先自动跑完第一轮分析和建议，把人工精力留给最后的微调判断。
           </p>
           <div class="problem-layout">
-            <article class="dark-card flowchart-card reveal-left">
-              <h3>流程对比</h3>
-              <span class="section-tag">传统 ISP 调试流程</span>
-              <div class="process-flow compact-4">
+              <article class="dark-card flowchart-card reveal-left">
+                <h3>流程对比</h3>
+                <span class="section-tag">传统 ISP 调试流程</span>
+                <div class="process-flow compact-4">
                 <div class="flow-step">
                   <strong>多设备准备 + 多场景拍摄</strong>
                   <small>不同 sensor / 镜头，人像 / 夜景 / 风景</small>
@@ -1020,13 +1020,12 @@
             </article>
             <div class="problem-panels">
               <article class="dark-card problem-note-card reveal-scale">
-                <h3>为什么需要这个项目</h3>
+                <h3>为什么值得做</h3>
                 <ul class="list-tight">
                   <li>高度依赖人工经验，主观性强</li>
                   <li>需要多设备、多场景反复拍摄</li>
-                  <li>调参周期长，常常数小时甚至数天</li>
+                  <li>调参周期长，验证成本高</li>
                   <li>评测不通过 -> 全流程重跑</li>
-                  <li>效率低且不可规模化</li>
                 </ul>
               </article>
               <div class="goal-strip reveal">
@@ -1067,27 +1066,27 @@
             <div class="flow-step">
               <span class="section-tag">Step 1</span>
               <strong>Decode</strong>
-              <small>接收 base64 图像并转成 OpenCV 可处理格式。</small>
+              <small>接收图像并转成 OpenCV 格式。</small>
             </div>
             <div class="flow-step">
               <span class="section-tag">Step 2</span>
               <strong>Semantic Segmentation</strong>
-              <small>识别人、天空、植被和背景等语义区域。</small>
+              <small>识别人、天空、植被、背景。</small>
             </div>
             <div class="flow-step">
               <span class="section-tag">Step 3</span>
               <strong>Metric + Structure</strong>
-              <small>计算清晰度/锐度与亮度/色度噪声指标，并做 flat/edge/texture 分区。</small>
+              <small>计算质量指标，并做 flat/edge/texture 分区。</small>
             </div>
             <div class="flow-step">
               <span class="section-tag">Step 4</span>
               <strong>Score + Suggest</strong>
-              <small>合成总分并生成可回溯的调参建议。</small>
+              <small>归一化打分并生成可回溯建议。</small>
             </div>
             <div class="flow-step">
               <span class="section-tag">Step 5</span>
               <strong>Serve + Visualize</strong>
-              <small>通过 API、UI、overlay 和 JSON 对外展示结果。</small>
+              <small>通过 API、UI、overlay、JSON 展示结果。</small>
             </div>
           </div>
           <div class="grid-2">
@@ -1118,7 +1117,7 @@
                 <li>`POST /analyze` 返回结构化 JSON</li>
                 <li>`GET /` 提供本地调试 UI</li>
                 <li>结果文件落到 `outputs/` 便于复核</li>
-                <li>浏览器直接查看图、mask、分数和建议</li>
+                <li>浏览器直接查看图、mask、分数、建议</li>
               </ul>
             </article>
           </div>
@@ -1143,36 +1142,36 @@
             <div class="flow-step">
               <span class="section-tag">Step 1</span>
               <strong>输入 BGR 图像</strong>
-              <small>分析器先完成 base64 解码，再把图像送入分割模块。</small>
+              <small>分析器先完成解码，再把图像送入分割模块。</small>
             </div>
             <div class="flow-step">
               <span class="section-tag">Step 2</span>
               <strong>转 RGB + Processor</strong>
-              <small>用 `AutoImageProcessor` 按 SegFormer 输入格式做预处理。</small>
+              <small>按 SegFormer 输入格式做预处理。</small>
             </div>
             <div class="flow-step">
               <span class="section-tag">Step 3</span>
               <strong>SegFormer 推理</strong>
-              <small>使用 `nvidia/segformer-b2-finetuned-ade-512-512` 输出 logits。</small>
+              <small>使用 SegFormer 输出 logits。</small>
             </div>
             <div class="flow-step">
               <span class="section-tag">Step 4</span>
               <strong>上采样 + argmax</strong>
-              <small>把 logits 上采样回原图尺寸，再用 argmax 得到 2D label map。</small>
+              <small>回到原图尺寸，再得到 2D label map。</small>
             </div>
             <div class="flow-step">
               <span class="section-tag">Step 5</span>
               <strong>ADE20K 标签映射</strong>
-              <small>聚合成 person / sky / vegetation / background 四类 mask。</small>
+              <small>`sky` 使用 label 2，聚合成四类 mask。</small>
             </div>
           </div>
           <div class="two-band">
             <article class="dark-card reveal-left">
               <h3>为什么这样做</h3>
               <ul class="list-tight">
-                <li>先用大模型给出像素级语义，再压缩成答辩真正关心的少数区域</li>
-                <li>background 由“非前景区域”自动补全，避免遗漏无标签部分</li>
-                <li>后续所有区域指标都直接依赖这些 mask，不需要重复分割</li>
+                <li>先拿到像素级语义，再压缩成答辩真正关心的少数区域</li>
+                <li>background 用非前景区域自动补全</li>
+                <li>后续区域指标直接复用这些 mask</li>
               </ul>
             </article>
             <article class="dark-card reveal-left">
@@ -1180,7 +1179,7 @@
               <ul class="list-tight">
                 <li>一张和原图同尺寸的语义 label map</li>
                 <li>person / sky / vegetation / background 四类 mask</li>
-                <li>可直接进入区域评分和 overlay 展示的分区结果</li>
+                <li>可直接进入区域评分和 overlay 展示</li>
               </ul>
             </article>
           </div>
@@ -1205,7 +1204,7 @@
             <div class="flow-step">
               <span class="section-tag">Step 1</span>
               <strong>转灰度图</strong>
-              <small>如果输入是彩色图，先转成灰度，后续结构特征都在灰度域计算。</small>
+              <small>后续结构特征统一在灰度域计算。</small>
             </div>
             <div class="flow-step">
               <span class="section-tag">Step 2</span>
@@ -1215,12 +1214,12 @@
             <div class="flow-step">
               <span class="section-tag">Step 3</span>
               <strong>阈值划分 mask</strong>
-              <small>固定阈值：高梯度是 edge；低梯度且低局部方差是 flat；其余归 texture。</small>
+              <small>高梯度是 edge；低梯度低方差是 flat；其余归 texture。</small>
             </div>
             <div class="flow-step">
               <span class="section-tag">Step 4</span>
               <strong>叠加到语义区域</strong>
-              <small>计算 flat / edge / texture 与语义 mask 的交集，用于结构指标和建议生成。</small>
+              <small>与语义 mask 求交集，用于结构指标和建议生成。</small>
             </div>
           </div>
           <div class="two-band">
@@ -1235,11 +1234,11 @@
             <article class="dark-card reveal-left">
               <h3>怎么接到评分</h3>
               <ul class="list-tight">
-                <li>基础分数：Laplacian_Clarity、EdgeGrad_mean、sigma_L、sigma_C</li>
-                <li>结构分区负责解释噪点在 flat，锐度在 edge，清晰度在 texture 哪里出问题</li>
-                <li>最终再结合 person 0.5 / sky 0.2 / vegetation 0.2 / global 0.1 做输出</li>
+                <li>原始指标：Laplacian_Clarity、EdgeGrad_mean、sigma_L、sigma_C</li>
+                <li>先线性归一化到 0-100，再做区域 score</li>
+                <li>最后按 person 0.5 / sky 0.2 / vegetation 0.2 / global 0.1 汇总</li>
               </ul>
-              <div class="formula">score = 0.35 * Laplacian_Clarity + 0.25 * EdgeGrad_mean + 0.2 * sigma_L + 0.2 * sigma_C</div>
+              <div class="formula">score = 0.35 * clarity + 0.25 * edge + 0.2 * sigma_L + 0.2 * sigma_C</div>
             </article>
           </div>
         </div>
@@ -1257,32 +1256,32 @@
               <span class="section-id">06 / Experiment</span>
               <h2>实验结果：从分区到建议</h2>
             </div>
-            <span class="section-tag">一页讲清“看到了什么，得出了什么”</span>
+            <span class="section-tag">使用最新样例：skyface2.jpg</span>
           </div>
           <div class="two-band">
             <div class="grid-2 reveal-scale">
               <div class="image-panel">
                 <strong>输入图像</strong>
                 <div class="image-frame">
-                  <img src="./presentation-assets/source-image.png" alt="source image" />
+                  <img src="./presentation-assets/skyface2-source.jpg" alt="skyface2 source image" />
                 </div>
               </div>
               <div class="image-panel">
-                <strong>Semantic Overlay</strong>
+                <strong>语义叠加图</strong>
                 <div class="image-frame">
-                  <img src="./presentation-assets/semantic-overlay.png" alt="semantic overlay" />
+                  <img src="./presentation-assets/skyface2-semantic-overlay.png" alt="skyface2 semantic overlay" />
                 </div>
               </div>
               <div class="image-panel">
-                <strong>Structure Overlay</strong>
+                <strong>结构叠加图</strong>
                 <div class="image-frame">
-                  <img src="./presentation-assets/structure-overlay.png" alt="structure overlay" />
+                  <img src="./presentation-assets/skyface2-structure-overlay.png" alt="skyface2 structure overlay" />
                 </div>
               </div>
               <div class="image-panel">
-                <strong>代表性 Mask</strong>
+                <strong>天空 Mask</strong>
                 <div class="image-frame">
-                  <img src="./presentation-assets/flat-mask.png" alt="flat mask" />
+                  <img src="./presentation-assets/skyface2-sky-mask.png" alt="skyface2 sky mask" />
                 </div>
               </div>
             </div>
@@ -1291,29 +1290,29 @@
               <div class="metric-grid">
                 <div class="kv">
                   <span>final_score</span>
-                  <strong>54.39</strong>
+                  <strong>26.51</strong>
                 </div>
                 <div class="kv">
                   <span>person weight</span>
-                  <strong>0.625</strong>
+                  <strong>0.50</strong>
                 </div>
                 <div class="kv">
                   <span>sky weight</span>
-                  <strong>0.25</strong>
+                  <strong>0.20</strong>
                 </div>
                 <div class="kv">
                   <span>global weight</span>
-                  <strong>0.125</strong>
+                  <strong>0.10</strong>
                 </div>
               </div>
               <div class="mono-box">suggestions:
-- apply denoising
-- increase sharpening
-- reduce chroma/luma noise in flat regions</div>
+- 增强人物细节
+- 启用亮度降噪
+- 增加锐化</div>
               <ul class="list-tight">
-                <li>人物面积不大，但因主体权重高，仍显著影响总分</li>
-                <li>天空和平坦区问题被单独暴露出来，不再被全局均值掩盖</li>
-                <li>建议可回溯到区域和指标，不是泛化描述</li>
+                <li>这张图同时命中人物和天空区域，说明分区链路已经打通</li>
+                <li>总分偏低，主要暴露在人物细节不足和噪声偏高</li>
+                <li>建议可以直接回溯到区域和指标，不是泛化描述</li>
               </ul>
             </article>
           </div>
