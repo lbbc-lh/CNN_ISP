@@ -19,7 +19,7 @@ SEGFORMER_CHECKPOINT = "nvidia/segformer-b2-finetuned-ade-512-512"
 TARGET_REGIONS = ("person", "sky", "vegetation", "background")
 ADE20K_REGION_MAP = {
     "person": {12},
-    "sky": {3},
+    "sky": {2},
     "vegetation": {4, 9, 17, 66},
 }
 OVERLAY_COLORS = {
@@ -36,6 +36,32 @@ class SegmentationResult:
     masks: dict[str, np.ndarray]
     overlay: np.ndarray
     mask_visualizations: dict[str, np.ndarray]
+    label_summary: list[dict[str, int | float | str]]
+
+
+def summarize_label_map(
+    label_map: np.ndarray,
+    limit: int = 10,
+    id_to_label: dict[int, str] | None = None,
+) -> list[dict[str, int | float | str]]:
+    label_map = np.asarray(label_map, dtype=np.int64)
+    total_pixels = int(label_map.size)
+    if total_pixels == 0:
+        return []
+
+    unique_ids, counts = np.unique(label_map, return_counts=True)
+    ranked = sorted(zip(unique_ids.tolist(), counts.tolist()), key=lambda item: item[1], reverse=True)
+    summary: list[dict[str, int | float | str]] = []
+    for label_id, count in ranked[:limit]:
+        summary.append(
+            {
+                "label_id": int(label_id),
+                "label_name": (id_to_label or {}).get(int(label_id), f"class_{int(label_id)}"),
+                "pixel_count": int(count),
+                "coverage_ratio": float(count / total_pixels),
+            }
+        )
+    return summary
 
 
 def build_region_masks(label_map: np.ndarray) -> dict[str, np.ndarray]:
@@ -85,6 +111,7 @@ class SegmentationEngine:
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self._processor: Any | None = None
         self._model: Any | None = None
+        self._id_to_label: dict[int, str] | None = None
 
     def _load(self) -> None:
         if self._processor is not None and self._model is not None:
@@ -98,6 +125,7 @@ class SegmentationEngine:
         self._model = SegformerForSemanticSegmentation.from_pretrained(self.checkpoint)
         self._model.to(self.device)
         self._model.eval()
+        self._id_to_label = {int(key): value for key, value in self._model.config.id2label.items()}
 
     def predict_label_map(self, image: np.ndarray) -> np.ndarray:
         self._load()
@@ -127,4 +155,5 @@ class SegmentationEngine:
             masks=masks,
             overlay=overlay,
             mask_visualizations=mask_visualizations,
+            label_summary=summarize_label_map(label_map, id_to_label=self._id_to_label),
         )

@@ -1,102 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CNN IQA Debug UI</title>
+    <title>CNN 图像质量分析看板</title>
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
     <main class="page">
       <header class="hero">
         <div>
-          <p class="eyebrow">ISP Debug Dashboard</p>
-          <h1>CNN Image Quality Analyzer</h1>
+          <p class="eyebrow">ISP 调试看板</p>
+          <h1>CNN 图像质量分析看板</h1>
           <p class="subtitle">
-            Upload a reference image and a test image, compare two machines, and inspect
-            segmentation, structure masks, metrics, deltas, and raw JSON in one place.
+            上传参考图和测试图，对比两套成像结果，并在一个界面中查看语义分割、结构分区、
+            各项指标、分数差异和原始 JSON。
           </p>
         </div>
         <div class="controls">
           <label class="upload">
-            <span>Reference Image</span>
+            <span>参考图</span>
             <input id="reference-file-input" type="file" accept="image/*" />
           </label>
           <label class="upload">
-            <span>Test Image</span>
+            <span>测试图</span>
             <input id="test-file-input" type="file" accept="image/*" />
           </label>
-          <button id="analyze-button" disabled>Compare</button>
-          <p id="status-text" class="status">Choose both images to begin.</p>
+          <button id="analyze-button" disabled>开始对比</button>
+          <p id="status-text" class="status">请选择参考图和测试图后开始。</p>
         </div>
       </header>
 
-      <nav class="tabs" aria-label="Debug sections">
-        <button type="button" class="tab is-active" data-tab="overview">Overview</button>
-        <button type="button" class="tab" data-tab="semantic">Semantic</button>
-        <button type="button" class="tab" data-tab="structure">Structure</button>
-        <button type="button" class="tab" data-tab="json">Raw JSON</button>
+      <nav class="tabs" aria-label="调试分区">
+        <button type="button" class="tab is-active" data-tab="overview">总览</button>
+        <button type="button" class="tab" data-tab="semantic">语义分割</button>
+        <button type="button" class="tab" data-tab="structure">结构分区</button>
+        <button type="button" class="tab" data-tab="json">原始 JSON</button>
       </nav>
 
       <section class="tab-panel is-active" data-panel="overview">
         <section class="grid visuals">
           <article class="card">
             <div class="card-head">
-              <h2>Reference</h2>
-              <span id="reference-meta" class="meta">No image</span>
+              <h2>参考图</h2>
+              <span id="reference-meta" class="meta">未选择图片</span>
             </div>
-            <div class="image-frame"><img id="reference-image" alt="reference preview" /></div>
+            <div class="image-frame"><img id="reference-image" alt="参考图预览" /></div>
           </article>
           <article class="card">
             <div class="card-head">
-              <h2>Test</h2>
-              <span id="test-meta" class="meta">No image</span>
+              <h2>测试图</h2>
+              <span id="test-meta" class="meta">未选择图片</span>
             </div>
-            <div class="image-frame"><img id="test-image" alt="test preview" /></div>
+            <div class="image-frame"><img id="test-image" alt="测试图预览" /></div>
           </article>
           <article class="card">
             <div class="card-head">
-              <h2>Test Semantic Overlay</h2>
-              <span id="request-id" class="meta">Pending</span>
+              <h2>测试图语义叠加图</h2>
+              <span id="request-id" class="meta">等待分析</span>
             </div>
-            <div class="image-frame"><img id="overlay-image" alt="segmentation overlay" /></div>
+            <div class="image-frame"><img id="overlay-image" alt="语义分割叠加图" /></div>
           </article>
           <article class="card">
             <div class="card-head">
-              <h2>Test Structure Overlay</h2>
-              <span class="meta">flat / edge / texture</span>
+              <h2>测试图结构叠加图</h2>
+              <span class="meta">平坦区 / 边缘区 / 纹理区</span>
             </div>
-            <div class="image-frame"><img id="structure-overlay-image" alt="structure overlay" /></div>
+            <div class="image-frame"><img id="structure-overlay-image" alt="结构分区叠加图" /></div>
           </article>
         </section>
 
         <section class="grid summary">
           <article class="card score-card">
-            <h2>Test Final Score</h2>
+            <h2>测试图最终分数</h2>
             <p id="final-score" class="score">--</p>
             <div id="missing-regions" class="pill-row"></div>
           </article>
           <article class="card">
-            <h2>Compare Summary</h2>
+            <h2>对比摘要</h2>
             <dl id="compare-summary" class="metrics-grid"></dl>
           </article>
           <article class="card">
-            <h2>Suggestions</h2>
+            <h2>调参建议</h2>
             <ul id="suggestions-list" class="list"></ul>
           </article>
           <article class="card">
-            <h2>Test Effective Weights</h2>
+            <h2>测试图有效权重</h2>
             <dl id="weights-grid" class="metrics-grid"></dl>
           </article>
         </section>
 
         <section class="grid metrics-section">
           <article class="card">
-            <h2>Test Global Metrics</h2>
+            <h2>测试图全局指标</h2>
             <dl id="global-metrics" class="metrics-grid"></dl>
           </article>
           <article class="card">
-            <h2>Test Detected Regions</h2>
+            <h2>测试图有效区域</h2>
             <div id="detected-regions" class="region-list"></div>
           </article>
         </section>
@@ -105,43 +105,43 @@
       <section class="tab-panel" data-panel="semantic">
         <section class="card">
           <div class="card-head">
-            <h2>Semantic Masks</h2>
-            <span class="meta">person / sky / vegetation / background</span>
+            <h2>语义分割 Mask</h2>
+            <span class="meta">人物 / 天空 / 植被 / 背景</span>
           </div>
           <div class="mask-grid">
             <article class="mask-card">
-              <h3>Person</h3>
-              <img id="mask-person" alt="person mask" />
+              <h3>人物</h3>
+              <img id="mask-person" alt="人物 mask" />
             </article>
             <article class="mask-card">
-              <h3>Sky</h3>
-              <img id="mask-sky" alt="sky mask" />
+              <h3>天空</h3>
+              <img id="mask-sky" alt="天空 mask" />
             </article>
             <article class="mask-card">
-              <h3>Vegetation</h3>
-              <img id="mask-vegetation" alt="vegetation mask" />
+              <h3>植被</h3>
+              <img id="mask-vegetation" alt="植被 mask" />
             </article>
             <article class="mask-card">
-              <h3>Background</h3>
-              <img id="mask-background" alt="background mask" />
+              <h3>背景</h3>
+              <img id="mask-background" alt="背景 mask" />
             </article>
           </div>
         </section>
 
         <section class="card">
-          <h2>Semantic Region Metrics</h2>
+          <h2>语义区域指标</h2>
           <div class="table-wrap">
             <table id="region-metrics-table">
               <thead>
                 <tr>
-                  <th>Region</th>
-                  <th>Valid</th>
-                  <th>Coverage</th>
-                  <th>Laplacian Clarity</th>
-                  <th>EdgeGrad Mean</th>
+                  <th>区域</th>
+                  <th>有效</th>
+                  <th>覆盖率</th>
+                  <th>Laplacian 清晰度</th>
+                  <th>EdgeGrad 均值</th>
                   <th>sigma_L</th>
                   <th>sigma_C</th>
-                  <th>Score</th>
+                  <th>分数</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -153,37 +153,37 @@
       <section class="tab-panel" data-panel="structure">
         <section class="card">
           <div class="card-head">
-            <h2>Structure Masks</h2>
-            <span class="meta">gradient + local variance partition</span>
+            <h2>结构分区 Mask</h2>
+            <span class="meta">基于梯度和局部方差划分</span>
           </div>
           <div class="mask-grid structure-grid">
             <article class="mask-card">
-              <h3>Flat</h3>
-              <img id="mask-flat" alt="flat mask" />
+              <h3>平坦区</h3>
+              <img id="mask-flat" alt="平坦区 mask" />
             </article>
             <article class="mask-card">
-              <h3>Edge</h3>
-              <img id="mask-edge" alt="edge mask" />
+              <h3>边缘区</h3>
+              <img id="mask-edge" alt="边缘区 mask" />
             </article>
             <article class="mask-card">
-              <h3>Texture</h3>
-              <img id="mask-texture" alt="texture mask" />
+              <h3>纹理区</h3>
+              <img id="mask-texture" alt="纹理区 mask" />
             </article>
           </div>
         </section>
 
         <section class="card">
-          <h2>Semantic Structure Metrics</h2>
+          <h2>语义结构指标</h2>
           <div class="table-wrap">
             <table id="semantic-structure-table">
               <thead>
                 <tr>
-                  <th>Semantic Region</th>
-                  <th>Valid</th>
-                  <th>Coverage</th>
-                  <th>Flat Noise</th>
-                  <th>Edge Sharpness</th>
-                  <th>Texture Clarity</th>
+                  <th>语义区域</th>
+                  <th>有效</th>
+                  <th>覆盖率</th>
+                  <th>平坦区噪声</th>
+                  <th>边缘锐度</th>
+                  <th>纹理清晰度</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -194,8 +194,8 @@
 
       <section class="tab-panel" data-panel="json">
         <section class="card">
-          <h2>Raw JSON</h2>
-          <pre id="raw-json" class="json-viewer">No analysis yet.</pre>
+          <h2>原始 JSON</h2>
+          <pre id="raw-json" class="json-viewer">尚未开始分析。</pre>
         </section>
       </section>
     </main>

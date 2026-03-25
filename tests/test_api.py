@@ -67,7 +67,12 @@ class StubAnalyzer:
             "detected_regions": [
                 {"label": "person", "coverage_ratio": 0.2, "weight": 0.7, "metrics": {"Laplacian_Clarity": 1.0, "EdgeGrad_mean": 2.0, "sigma_L": 3.0, "sigma_C": 4.0, "score": 5.0, "coverage_ratio": 0.2, "valid": True}}
             ],
-            "suggestions": ["increase sharpening"],
+            "suggestions": ["增加锐化"],
+            "segmentation_debug": {
+                "top_labels": [
+                    {"label_id": 3, "label_name": "sky", "pixel_count": 64, "coverage_ratio": 0.25}
+                ]
+            },
             "visualizations": {
                 "overlay_base64": "abc",
                 "mask_base64": {
@@ -142,7 +147,8 @@ def test_homepage_returns_html():
     response = client.get("/")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "CNN Image Quality Analyzer" in response.text
+    assert "CNN 图像质量分析看板" in response.text
+    assert "开始对比" in response.text
 
 
 def test_analyze_endpoint_rejects_invalid_payload(monkeypatch):

@@ -38,6 +38,27 @@ const structureMaskEls = {
 let referenceFile = null;
 let testFile = null;
 
+const regionLabels = {
+  person: "人物",
+  sky: "天空",
+  vegetation: "植被",
+  background: "背景",
+  flat: "平坦区",
+  edge: "边缘区",
+  texture: "纹理区",
+  global: "全局",
+};
+
+const metricLabels = {
+  reference_score: "参考图分数",
+  test_score: "测试图分数",
+  final_score_gap: "最终分数差",
+};
+
+function formatLabel(key) {
+  return regionLabels[key] || metricLabels[key] || key;
+}
+
 function setActiveTab(tabName) {
   tabs.forEach((tab) => {
     tab.classList.toggle("is-active", tab.dataset.tab === tabName);
@@ -60,7 +81,7 @@ function renderMetricGrid(target, values) {
   target.innerHTML = "";
   for (const [key, value] of Object.entries(values)) {
     const dt = document.createElement("dt");
-    dt.textContent = key;
+    dt.textContent = formatLabel(key);
     const dd = document.createElement("dd");
     dd.textContent = formatNumber(value);
     target.append(dt, dd);
@@ -72,14 +93,14 @@ function renderPills(target, values, className = "") {
   if (!values.length) {
     const empty = document.createElement("span");
     empty.className = "pill success";
-    empty.textContent = "None";
+    empty.textContent = "无";
     target.appendChild(empty);
     return;
   }
   for (const value of values) {
     const span = document.createElement("span");
     span.className = `pill ${className}`.trim();
-    span.textContent = value;
+    span.textContent = formatLabel(value);
     target.appendChild(span);
   }
 }
@@ -88,7 +109,7 @@ function renderSuggestions(values) {
   suggestionsList.innerHTML = "";
   if (!values.length) {
     const item = document.createElement("li");
-    item.textContent = "No suggestions.";
+    item.textContent = "暂无建议。";
     suggestionsList.appendChild(item);
     return;
   }
@@ -104,8 +125,8 @@ function renderRegionMetrics(regionMetrics) {
   for (const [region, metrics] of Object.entries(regionMetrics)) {
     const row = document.createElement("tr");
     const values = [
-      region,
-      metrics.valid ? "yes" : "no",
+      formatLabel(region),
+      metrics.valid ? "是" : "否",
       formatNumber(metrics.coverage_ratio),
       formatNumber(metrics.Laplacian_Clarity),
       formatNumber(metrics.EdgeGrad_mean),
@@ -127,8 +148,8 @@ function renderSemanticStructureTable(target, metricsByRegion) {
   for (const [region, metrics] of Object.entries(metricsByRegion)) {
     const row = document.createElement("tr");
     const values = [
-      region,
-      metrics.valid ? "yes" : "no",
+      formatLabel(region),
+      metrics.valid ? "是" : "否",
       formatNumber(metrics.coverage_ratio),
       formatNumber(metrics.flat_noise),
       formatNumber(metrics.edge_sharpness),
@@ -146,7 +167,7 @@ function renderSemanticStructureTable(target, metricsByRegion) {
 function renderDetectedRegions(items) {
   detectedRegions.innerHTML = "";
   if (!items.length) {
-    detectedRegions.textContent = "No valid semantic region detected.";
+    detectedRegions.textContent = "未检测到有效语义区域。";
     return;
   }
 
@@ -154,10 +175,10 @@ function renderDetectedRegions(items) {
     const card = document.createElement("article");
     card.className = "region-item";
     card.innerHTML = `
-      <strong>${item.label}</strong>
-      <div>coverage: ${formatNumber(item.coverage_ratio)}</div>
-      <div>weight: ${formatNumber(item.weight)}</div>
-      <div>score: ${formatNumber(item.metrics.score)}</div>
+      <strong>${formatLabel(item.label)}</strong>
+      <div>覆盖率：${formatNumber(item.coverage_ratio)}</div>
+      <div>权重：${formatNumber(item.weight)}</div>
+      <div>分数：${formatNumber(item.metrics.score)}</div>
     `;
     detectedRegions.appendChild(card);
   }
@@ -168,7 +189,7 @@ function renderCompareResults(result) {
   const referenceResult = result.reference || {};
   const delta = result.delta || {};
 
-  requestId.textContent = testResult.request_id || "N/A";
+  requestId.textContent = testResult.request_id || "无";
   finalScore.textContent = formatNumber(testResult.final_score);
   renderPills(missingRegions, testResult.missing_regions || [], "error");
   renderSuggestions(testResult.suggestions || []);
@@ -203,7 +224,7 @@ async function fileToBase64(file) {
       const result = String(reader.result);
       resolve(result.split(",", 2)[1]);
     };
-    reader.onerror = () => reject(new Error("Unable to read file"));
+    reader.onerror = () => reject(new Error("读取文件失败"));
     reader.readAsDataURL(file);
   });
 }
@@ -212,7 +233,7 @@ async function analyze() {
   if (!referenceFile || !testFile) return;
 
   analyzeButton.disabled = true;
-  statusText.textContent = "Comparing two images...";
+  statusText.textContent = "正在对比两张图片...";
 
   try {
     const referenceBase64 = await fileToBase64(referenceFile);
@@ -226,13 +247,13 @@ async function analyze() {
 
     const payload = await response.json();
     if (!response.ok) {
-      throw new Error(payload.detail || "Analysis failed");
+      throw new Error(payload.detail || "分析失败");
     }
 
     renderCompareResults(payload);
-    statusText.textContent = "Comparison completed.";
+    statusText.textContent = "对比完成。";
   } catch (error) {
-    statusText.textContent = `Error: ${error.message}`;
+    statusText.textContent = `错误：${error.message}`;
   } finally {
     analyzeButton.disabled = false;
   }
@@ -240,13 +261,13 @@ async function analyze() {
 
 function updateReadyState() {
   analyzeButton.disabled = !(referenceFile && testFile);
-  statusText.textContent = referenceFile && testFile ? "Ready to compare." : "Choose both images to begin.";
+  statusText.textContent = referenceFile && testFile ? "已就绪，可开始对比。" : "请选择参考图和测试图后开始。";
 }
 
 referenceFileInput.addEventListener("change", () => {
   referenceFile = referenceFileInput.files[0] || null;
   if (!referenceFile) {
-    referenceMeta.textContent = "No image";
+    referenceMeta.textContent = "未选择图片";
     updateReadyState();
     return;
   }
@@ -262,7 +283,7 @@ referenceFileInput.addEventListener("change", () => {
 testFileInput.addEventListener("change", () => {
   testFile = testFileInput.files[0] || null;
   if (!testFile) {
-    testMeta.textContent = "No image";
+    testMeta.textContent = "未选择图片";
     updateReadyState();
     return;
   }

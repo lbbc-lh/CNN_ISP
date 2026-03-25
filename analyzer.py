@@ -82,15 +82,15 @@ def build_suggestions(global_metrics: dict, region_metrics: dict[str, dict]) -> 
         sigma_c = metrics.get("sigma_C", 0.0)
 
         if laplacian_clarity < 60 or edgegrad_mean < 35:
-            add("increase face/person detail enhancement" if scope == "person" else "increase sharpening")
+            add("增强人物细节" if scope == "person" else "增加锐化")
         if sigma_l > 18:
-            add("apply luma denoising")
+            add("启用亮度降噪")
         if sigma_c > 18:
-            add("reduce chroma noise")
+            add("降低色度噪声")
         if scope == "sky" and sigma_l > 18:
-            add("reduce chroma/luma noise in flat regions")
+            add("降低平坦区域的亮度/色度噪声")
         if scope == "vegetation" and laplacian_clarity < 60 and edgegrad_mean > 80:
-            add("reduce sharpening halos in textured regions")
+            add("减轻纹理区域的锐化光晕")
 
     return suggestions
 
@@ -226,6 +226,9 @@ class ImageQualityAnalyzer:
             "missing_regions": missing_regions,
             "detected_regions": self._build_detected_regions(region_metrics, effective_weights),
             "suggestions": suggestions,
+            "segmentation_debug": {
+                "top_labels": segmentation_result.label_summary,
+            },
             "visualizations": {
                 "overlay_base64": encode_image_to_base64(segmentation_result.overlay),
                 "mask_base64": {

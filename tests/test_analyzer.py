@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from analyzer import ImageQualityAnalyzer
+from analyzer import build_suggestions
 from analyzer import decode_base64_image
 
 
@@ -31,6 +32,10 @@ class FakeSegmentationResult:
             region: cv2.cvtColor(mask.astype(np.uint8) * 255, cv2.COLOR_GRAY2BGR)
             for region, mask in self.masks.items()
         }
+        self.label_summary = [
+            {"label_id": 3, "label_name": "sky", "pixel_count": int(sky.sum()), "coverage_ratio": float(sky.mean())},
+            {"label_id": 12, "label_name": "person", "pixel_count": int(person.sum()), "coverage_ratio": float(person.mean())},
+        ]
 
 
 class FakeEngine:
@@ -68,6 +73,7 @@ def test_analyze_image_returns_expected_top_level_keys(sample_base64, tmp_path: 
     assert "suggestions" in result
     assert "visualizations" in result
     assert "structure_visualizations" in result
+    assert "segmentation_debug" in result
     assert set(result["region_metrics"].keys()) == {"person", "sky", "vegetation", "background"}
     assert set(result["visualizations"]["mask_base64"].keys()) == {"person", "sky", "vegetation", "background"}
     assert set(result["semantic_structure_metrics"].keys()) == {"person", "sky", "vegetation", "background"}
@@ -125,6 +131,13 @@ def test_region_metrics_use_new_isp_metric_names(sample_base64, tmp_path: Path):
     }
 
 
+def test_analyze_image_includes_segmentation_debug_summary(sample_base64, tmp_path: Path):
+    analyzer = ImageQualityAnalyzer(segmentation_engine=FakeEngine(), output_dir=tmp_path / "outputs")
+    result = analyzer.analyze_base64(sample_base64)
+    assert "top_labels" in result["segmentation_debug"]
+    assert result["segmentation_debug"]["top_labels"][0]["label_id"] == 3
+
+
 def test_compare_base64_returns_reference_test_and_delta(sample_base64, tmp_path: Path):
     analyzer = ImageQualityAnalyzer(segmentation_engine=FakeEngine(), output_dir=tmp_path / "outputs")
     result = analyzer.compare_base64(sample_base64, sample_base64)
@@ -132,3 +145,45 @@ def test_compare_base64_returns_reference_test_and_delta(sample_base64, tmp_path
     assert result["delta"]["final_score_gap"] == pytest.approx(0.0)
     assert "global_metrics_gap" in result["delta"]
     assert "region_score_gap" in result["delta"]
+
+
+def test_build_suggestions_returns_chinese_messages():
+    suggestions = build_suggestions(
+        global_metrics={
+            "Laplacian_Clarity": 40.0,
+            "EdgeGrad_mean": 20.0,
+            "sigma_L": 22.0,
+            "sigma_C": 24.0,
+            "valid": True,
+        },
+        region_metrics={
+            "person": {
+                "Laplacian_Clarity": 30.0,
+                "EdgeGrad_mean": 20.0,
+                "sigma_L": 22.0,
+                "sigma_C": 24.0,
+                "valid": True,
+            },
+            "sky": {
+                "Laplacian_Clarity": 70.0,
+                "EdgeGrad_mean": 50.0,
+                "sigma_L": 22.0,
+                "sigma_C": 24.0,
+                "valid": True,
+            },
+            "vegetation": {
+                "Laplacian_Clarity": 30.0,
+                "EdgeGrad_mean": 90.0,
+                "sigma_L": 10.0,
+                "sigma_C": 10.0,
+                "valid": True,
+            },
+        },
+    )
+
+    assert "增强人物细节" in suggestions
+    assert "增加锐化" in suggestions
+    assert "启用亮度降噪" in suggestions
+    assert "降低色度噪声" in suggestions
+    assert "降低平坦区域的亮度/色度噪声" in suggestions
+    assert "减轻纹理区域的锐化光晕" in suggestions

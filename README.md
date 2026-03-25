@@ -57,7 +57,7 @@ flowchart TD
 模型使用 `nvidia/segformer-b2-finetuned-ade-512-512`，并将 ADE20K 类别映射为：
 
 - `person`: `12`
-- `sky`: `3`
+- `sky`: `2`
 - `vegetation`: `4`, `9`, `17`, `66`
 - `background`: 上述三类的补集
 
@@ -208,8 +208,8 @@ Response:
     }
   ],
   "suggestions": [
-    "increase sharpening",
-    "apply denoising"
+    "增加锐化",
+    "启用亮度降噪"
   ],
   "visualizations": {
     "overlay_base64": "...",
