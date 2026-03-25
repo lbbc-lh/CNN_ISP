@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CNN ISP 项目答辩</title>
+    <title>SegFormer ISP 项目介绍</title>
     <link
       rel="preconnect"
       href="https://fonts.googleapis.com"
@@ -339,7 +339,7 @@
         display: flex;
         flex-direction: column;
         gap: clamp(0.8rem, 1.6vw, 1.4rem);
-        height: 100%;
+        justify-content: center;
       }
 
       .slide-head {
@@ -722,6 +722,56 @@
         min-height: 0;
       }
 
+      .split-halves {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: clamp(0.8rem, 1.2vw, 1rem);
+        min-height: 0;
+      }
+
+      .experiment-layout {
+        display: grid;
+        gap: clamp(0.6rem, 1vw, 0.9rem);
+        min-height: 0;
+      }
+
+      .experiment-images {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: clamp(0.55rem, 0.9vw, 0.75rem);
+        min-height: 0;
+      }
+
+      .experiment-images .image-panel {
+        padding: clamp(0.55rem, 0.9vw, 0.72rem);
+        gap: clamp(0.3rem, 0.55vw, 0.45rem);
+      }
+
+      .experiment-images .image-panel strong {
+        font-size: clamp(0.68rem, 0.88vw, 0.8rem);
+        line-height: 1.1;
+      }
+
+      .experiment-images .image-frame {
+        padding: clamp(0.22rem, 0.45vw, 0.35rem);
+      }
+
+      .experiment-images .image-frame img {
+        max-height: min(24vh, 185px);
+      }
+
+      .experiment-summary {
+        display: grid;
+        grid-template-columns: 0.92fr 1.08fr;
+        gap: clamp(0.7rem, 1vw, 0.9rem);
+        align-items: start;
+        min-height: 0;
+      }
+
+      .experiment-summary .dark-card {
+        padding: clamp(0.72rem, 1vw, 0.88rem);
+      }
+
       .image-panel {
         display: grid;
         gap: clamp(0.45rem, 0.8vw, 0.7rem);
@@ -936,12 +986,12 @@
       <div class="slide-content">
         <div class="slide-shell">
           <div class="slide-head reveal">
-            <span class="section-id">01 / Interview Defense</span>
-            <span class="section-tag">CNN + ISP + FastAPI</span>
+              <span class="section-id">01 / Project Overview</span>
+            <span class="section-tag">SegFormer + ISP + FastAPI</span>
           </div>
           <div class="hero-copy">
             <p class="eyebrow reveal">面向 ISP 调试辅助的工程化工具</p>
-            <h1 class="reveal">CNN ISP</h1>
+            <h1 class="reveal">SegFormer ISP</h1>
             <p class="reveal">
               把“看图调参”收敛成一套可解释、可复核、可演示的调试辅助流程。
             </p>
@@ -1005,7 +1055,7 @@
                 </div>
                 <div class="flow-step">
                   <strong>算法自动评估</strong>
-                  <small>CNN + CV 指标</small>
+                  <small>SegFormer + CV 指标</small>
                 </div>
                 <div class="flow-step">
                   <strong>自动生成调参建议</strong>
@@ -1169,9 +1219,9 @@
             <article class="dark-card reveal-left">
               <h3>为什么这样做</h3>
               <ul class="list-tight">
-                <li>先拿到像素级语义，再压缩成答辩真正关心的少数区域</li>
-                <li>background 用非前景区域自动补全</li>
-                <li>后续区域指标直接复用这些 mask</li>
+                <li>咨询过调试人员后，发现他们更习惯在同一场景下先看同一个物体的对比</li>
+                <li>我们也考虑过“先看四周再看中间”的方式，但不够稳定，解释成本更高</li>
+                <li>最终保留按语义区域分区，因为更符合调试习惯，也更方便后续指标复用</li>
               </ul>
             </article>
             <article class="dark-card reveal-left">
@@ -1222,20 +1272,30 @@
               <small>与语义 mask 求交集，用于结构指标和建议生成。</small>
             </div>
           </div>
-          <div class="two-band">
+          <div class="split-halves">
             <article class="dark-card reveal-left">
               <h3>这一步产出什么</h3>
-              <ul class="list-tight">
-                <li>flat / edge / texture 三类结构 mask</li>
-                <li>gradient map 和 variance map</li>
-                <li>可与语义区域交叉分析的结构结果</li>
-              </ul>
+              <div class="metric-grid">
+                <div class="kv">
+                  <span>3 类结构 mask</span>
+                  <strong>flat / edge / texture</strong>
+                </div>
+                <div class="kv">
+                  <span>结构判断依据</span>
+                  <strong>梯度 + 局部方差</strong>
+                </div>
+                <div class="kv">
+                  <span>1 组可解释结果</span>
+                  <strong>可与语义区域交叉分析</strong>
+                </div>
+              </div>
             </article>
             <article class="dark-card reveal-left">
               <h3>怎么接到评分</h3>
               <ul class="list-tight">
                 <li>原始指标：Laplacian_Clarity、EdgeGrad_mean、sigma_L、sigma_C</li>
-                <li>先线性归一化到 0-100，再做区域 score</li>
+                <li>这些基础指标先线性归一化到 0-100，再做区域 score</li>
+                <li>结构分区主要负责解释问题落在 flat / edge / texture 哪一类区域</li>
                 <li>最后按 person 0.5 / sky 0.2 / vegetation 0.2 / global 0.1 汇总</li>
               </ul>
               <div class="formula">score = 0.35 * clarity + 0.25 * edge + 0.2 * sigma_L + 0.2 * sigma_C</div>
@@ -1258,8 +1318,8 @@
             </div>
             <span class="section-tag">使用最新样例：skyface2.jpg</span>
           </div>
-          <div class="two-band">
-            <div class="grid-2 reveal-scale">
+          <div class="experiment-layout">
+            <div class="experiment-images reveal-scale">
               <div class="image-panel">
                 <strong>输入图像</strong>
                 <div class="image-frame">
@@ -1285,36 +1345,36 @@
                 </div>
               </div>
             </div>
-            <article class="dark-card reveal-left">
-              <h3>关键观察</h3>
-              <div class="metric-grid">
-                <div class="kv">
-                  <span>final_score</span>
-                  <strong>26.51</strong>
+            <div class="experiment-summary">
+              <article class="dark-card reveal-left">
+                <h3>关键数值</h3>
+                <div class="metric-grid">
+                  <div class="kv">
+                    <span>final_score</span>
+                    <strong>26.51</strong>
+                  </div>
+                  <div class="kv">
+                    <span>person weight</span>
+                    <strong>0.50</strong>
+                  </div>
+                  <div class="kv">
+                    <span>sky weight</span>
+                    <strong>0.20</strong>
+                  </div>
+                  <div class="kv">
+                    <span>global weight</span>
+                    <strong>0.10</strong>
+                  </div>
                 </div>
-                <div class="kv">
-                  <span>person weight</span>
-                  <strong>0.50</strong>
-                </div>
-                <div class="kv">
-                  <span>sky weight</span>
-                  <strong>0.20</strong>
-                </div>
-                <div class="kv">
-                  <span>global weight</span>
-                  <strong>0.10</strong>
-                </div>
-              </div>
-              <div class="mono-box">suggestions:
+              </article>
+              <article class="dark-card reveal-left">
+                <h3>建议与结论</h3>
+                <div class="mono-box">suggestions:
 - 增强人物细节
 - 启用亮度降噪
 - 增加锐化</div>
-              <ul class="list-tight">
-                <li>这张图同时命中人物和天空区域，说明分区链路已经打通</li>
-                <li>总分偏低，主要暴露在人物细节不足和噪声偏高</li>
-                <li>建议可以直接回溯到区域和指标，不是泛化描述</li>
-              </ul>
-            </article>
+              </article>
+            </div>
           </div>
         </div>
       </div>
@@ -1329,45 +1389,43 @@
           <div class="slide-head reveal">
             <div class="slide-title">
               <span class="section-id">07 / Challenges + Next</span>
-              <h2>难点、取舍与下一步</h2>
+              <h2>难点与下一步</h2>
             </div>
             <span class="section-tag">Q&amp;A</span>
           </div>
-          <div class="grid-3">
+          <div class="grid-2">
             <article class="metric-card reveal">
               <h3>难点 1</h3>
-              <p>区域经常缺失，所以我没有强行置零，而是只对有效区域做重归一化。</p>
+              <p>`sky` 标签曾映射错位。checkpoint 里 `sky=2`，不是 `3`，否则结果能跑但语义解释是错的。</p>
+              <p>解决方案：直接以 checkpoint 的 `id2label` 为准，并用回归测试锁住映射关系。</p>
             </article>
             <article class="metric-card reveal">
               <h3>难点 2</h3>
-              <p>建议系统如果太复杂就难解释，所以当前优先采用可回溯的规则法。</p>
-            </article>
-            <article class="metric-card reveal">
-              <h3>难点 3</h3>
-              <p>模型下载不稳定，因此测试更聚焦映射逻辑、指标函数和 API 结构。</p>
+              <p>有些图里 `person / sky / vegetation` 会缺失，如果强行按固定权重算，总分会被拉偏。</p>
+              <p>解决方案：只对有效区域做重归一化，让缺失区域不直接污染最终分数。</p>
             </article>
           </div>
           <div class="grid-2">
             <article class="dark-card reveal-left">
-              <h3>当前取舍</h3>
+              <h3>未来优化 1</h3>
               <ul class="list-tight">
-                <li>先把分析闭环和演示体验做完整</li>
-                <li>先保证可解释，再追求更复杂策略</li>
-                <li>先服务面试和调试，再做生产级优化</li>
+                <li>扩展分割类别，不只停留在 `person / sky / vegetation / background` 4 类</li>
+                <li>让区域划分更贴近真实调试场景，比如路面、建筑、肤色、阴影等目标</li>
+                <li>类别更细后，建议也能更准确地落到具体物体和区域</li>
               </ul>
             </article>
             <article class="dark-card reveal-left">
-              <h3>下一步</h3>
+              <h3>未来优化 2</h3>
               <ul class="list-tight">
-                <li>补更多场景数据，校准阈值和权重</li>
-                <li>加入更多 ISP 相关失真指标</li>
-                <li>支持多版本结果对比和报告导出</li>
+                <li>接入调试生产环境中的软件，例如 Chromatix 这类内置调试算法的平台</li>
+                <li>自动收集调试过程中的中间真实数据，而不只看最终图像结果</li>
+                <li>用这些真实数据继续训练自己的模型，逐步替代固定规则</li>
               </ul>
             </article>
           </div>
           <div class="footer-bar reveal">
-            <span>如果需要，我可以继续展开模块设计、实验解释或后续平台化方向</span>
-            <span>关键词：模块化 / 可解释 / 可演示</span>
+            <span>方向关键词：更多类别 / 接入生产软件 / 用真实调试数据训练自有模型</span>
+            <span>目标：从演示 demo 走向真正可嵌入调试流程的工具</span>
           </div>
         </div>
       </div>

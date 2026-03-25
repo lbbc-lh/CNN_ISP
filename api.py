@@ -18,7 +18,7 @@ logging.basicConfig(
 )
 LOGGER = logging.getLogger(__name__)
 
-app = FastAPI(title="CNN IQA Demo", version="0.1.0")
+app = FastAPI(title="SegFormer IQA Demo", version="0.1.0")
 analyzer = ImageQualityAnalyzer()
 BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))

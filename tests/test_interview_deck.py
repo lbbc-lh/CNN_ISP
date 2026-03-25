@@ -22,7 +22,7 @@ def test_interview_deck_uses_the_condensed_storyline():
         "语义分区流程",
         "结构分区流程",
         "实验结果：从分区到建议",
-        "难点、取舍与下一步",
+        "难点与下一步",
     ]
 
 
@@ -64,3 +64,21 @@ def test_core_design_slides_keep_flow_keywords_but_no_code_details_section():
     ]:
         assert needle in core_html
     assert "代码里怎么做" not in core_html
+
+
+def test_interview_deck_describes_the_segmentation_model_as_segformer_not_cnn():
+    html = DECK_PATH.read_text()
+    for needle in [
+        "CNN + ISP + FastAPI",
+        "<h1 class=\"reveal\">CNN ISP</h1>",
+        "CNN + CV 指标",
+    ]:
+        assert needle not in html
+
+
+def test_interview_deck_centers_non_cover_content_vertically():
+    html = DECK_PATH.read_text()
+    assert ".slide-shell {" in html
+    assert "height: 100%;" not in html.split(".slide-shell {", 1)[1].split("}", 1)[0]
+    assert "justify-content: center;" in html.split(".slide-shell {", 1)[1].split("}", 1)[0]
+    assert ".title-slide .slide-content {" in html

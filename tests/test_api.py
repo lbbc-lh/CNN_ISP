@@ -147,8 +147,13 @@ def test_homepage_returns_html():
     response = client.get("/")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "CNN 图像质量分析看板" in response.text
+    assert "SegFormer 图像质量分析看板" in response.text
+    assert "CNN 图像质量分析看板" not in response.text
     assert "开始对比" in response.text
+
+
+def test_api_title_uses_segformer_terminology():
+    assert api.app.title == "SegFormer IQA Demo"
 
 
 def test_analyze_endpoint_rejects_invalid_payload(monkeypatch):
