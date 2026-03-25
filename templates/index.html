@@ -13,17 +13,21 @@
           <p class="eyebrow">ISP Debug Dashboard</p>
           <h1>CNN Image Quality Analyzer</h1>
           <p class="subtitle">
-            Upload an image, run semantic-aware quality analysis, and inspect overlay, masks,
-            weights, metrics, and raw JSON in one place.
+            Upload a reference image and a test image, compare two machines, and inspect
+            segmentation, structure masks, metrics, deltas, and raw JSON in one place.
           </p>
         </div>
         <div class="controls">
           <label class="upload">
-            <span>Select Image</span>
-            <input id="file-input" type="file" accept="image/*" />
+            <span>Reference Image</span>
+            <input id="reference-file-input" type="file" accept="image/*" />
           </label>
-          <button id="analyze-button" disabled>Analyze</button>
-          <p id="status-text" class="status">Choose an image to begin.</p>
+          <label class="upload">
+            <span>Test Image</span>
+            <input id="test-file-input" type="file" accept="image/*" />
+          </label>
+          <button id="analyze-button" disabled>Compare</button>
+          <p id="status-text" class="status">Choose both images to begin.</p>
         </div>
       </header>
 
@@ -38,21 +42,28 @@
         <section class="grid visuals">
           <article class="card">
             <div class="card-head">
-              <h2>Source</h2>
-              <span id="source-meta" class="meta">No image</span>
+              <h2>Reference</h2>
+              <span id="reference-meta" class="meta">No image</span>
             </div>
-            <div class="image-frame"><img id="source-image" alt="source preview" /></div>
+            <div class="image-frame"><img id="reference-image" alt="reference preview" /></div>
           </article>
           <article class="card">
             <div class="card-head">
-              <h2>Semantic Overlay</h2>
+              <h2>Test</h2>
+              <span id="test-meta" class="meta">No image</span>
+            </div>
+            <div class="image-frame"><img id="test-image" alt="test preview" /></div>
+          </article>
+          <article class="card">
+            <div class="card-head">
+              <h2>Test Semantic Overlay</h2>
               <span id="request-id" class="meta">Pending</span>
             </div>
             <div class="image-frame"><img id="overlay-image" alt="segmentation overlay" /></div>
           </article>
           <article class="card">
             <div class="card-head">
-              <h2>Structure Overlay</h2>
+              <h2>Test Structure Overlay</h2>
               <span class="meta">flat / edge / texture</span>
             </div>
             <div class="image-frame"><img id="structure-overlay-image" alt="structure overlay" /></div>
@@ -61,27 +72,31 @@
 
         <section class="grid summary">
           <article class="card score-card">
-            <h2>Final Score</h2>
+            <h2>Test Final Score</h2>
             <p id="final-score" class="score">--</p>
             <div id="missing-regions" class="pill-row"></div>
+          </article>
+          <article class="card">
+            <h2>Compare Summary</h2>
+            <dl id="compare-summary" class="metrics-grid"></dl>
           </article>
           <article class="card">
             <h2>Suggestions</h2>
             <ul id="suggestions-list" class="list"></ul>
           </article>
           <article class="card">
-            <h2>Effective Weights</h2>
+            <h2>Test Effective Weights</h2>
             <dl id="weights-grid" class="metrics-grid"></dl>
           </article>
         </section>
 
         <section class="grid metrics-section">
           <article class="card">
-            <h2>Global Metrics</h2>
+            <h2>Test Global Metrics</h2>
             <dl id="global-metrics" class="metrics-grid"></dl>
           </article>
           <article class="card">
-            <h2>Detected Regions</h2>
+            <h2>Test Detected Regions</h2>
             <div id="detected-regions" class="region-list"></div>
           </article>
         </section>
@@ -122,9 +137,10 @@
                   <th>Region</th>
                   <th>Valid</th>
                   <th>Coverage</th>
-                  <th>Sharpness</th>
-                  <th>Noise</th>
-                  <th>Exposure</th>
+                  <th>Laplacian Clarity</th>
+                  <th>EdgeGrad Mean</th>
+                  <th>sigma_L</th>
+                  <th>sigma_C</th>
                   <th>Score</th>
                 </tr>
               </thead>

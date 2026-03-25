@@ -7,9 +7,9 @@ import numpy as np
 
 STRUCTURE_REGIONS = ("flat", "edge", "texture")
 STRUCTURE_COLORS = {
-    "flat": (214, 167, 57),
-    "edge": (53, 106, 255),
-    "texture": (46, 166, 92),
+    "flat": (0, 255, 0),
+    "edge": (0, 0, 255),
+    "texture": (255, 0, 0),
 }
 
 

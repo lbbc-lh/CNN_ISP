@@ -109,3 +109,26 @@ def test_missing_regions_are_reported_when_region_is_invalid(sample_base64, tmp_
     analyzer = ImageQualityAnalyzer(segmentation_engine=FakeEngine(), output_dir=tmp_path / "outputs")
     result = analyzer.analyze_base64(sample_base64)
     assert set(result["missing_regions"]).issubset({"person", "sky", "vegetation"})
+
+
+def test_region_metrics_use_new_isp_metric_names(sample_base64, tmp_path: Path):
+    analyzer = ImageQualityAnalyzer(segmentation_engine=FakeEngine(), output_dir=tmp_path / "outputs")
+    result = analyzer.analyze_base64(sample_base64)
+    assert set(result["global_metrics"].keys()) == {
+        "Laplacian_Clarity",
+        "EdgeGrad_mean",
+        "sigma_L",
+        "sigma_C",
+        "score",
+        "coverage_ratio",
+        "valid",
+    }
+
+
+def test_compare_base64_returns_reference_test_and_delta(sample_base64, tmp_path: Path):
+    analyzer = ImageQualityAnalyzer(segmentation_engine=FakeEngine(), output_dir=tmp_path / "outputs")
+    result = analyzer.compare_base64(sample_base64, sample_base64)
+    assert set(result.keys()) == {"reference", "test", "delta"}
+    assert result["delta"]["final_score_gap"] == pytest.approx(0.0)
+    assert "global_metrics_gap" in result["delta"]
+    assert "region_score_gap" in result["delta"]

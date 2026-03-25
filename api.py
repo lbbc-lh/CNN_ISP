@@ -29,6 +29,11 @@ class AnalyzeRequest(BaseModel):
     image: str
 
 
+class CompareRequest(BaseModel):
+    reference_image: str
+    test_image: str
+
+
 @app.get("/")
 def index(request: Request):
     return templates.TemplateResponse(request, "index.html", {})
@@ -50,3 +55,16 @@ def analyze(request: AnalyzeRequest) -> dict:
     except Exception as exc:  # pragma: no cover
         LOGGER.exception("Unexpected /analyze failure")
         raise HTTPException(status_code=500, detail="internal analysis error") from exc
+
+
+@app.post("/compare")
+def compare(request: CompareRequest) -> dict:
+    LOGGER.info("Received /compare request")
+    try:
+        return analyzer.compare_base64(request.reference_image, request.test_image)
+    except ValueError as exc:
+        LOGGER.warning("Bad /compare request: %s", exc)
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:  # pragma: no cover
+        LOGGER.exception("Unexpected /compare failure")
+        raise HTTPException(status_code=500, detail="internal compare error") from exc

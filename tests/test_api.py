@@ -11,12 +11,12 @@ class StubAnalyzer:
             raise ValueError("invalid base64 image payload")
         return {
             "request_id": "req-1",
-            "global_metrics": {"sharpness": 1.0, "noise": 2.0, "exposure": 3.0, "score": 4.0, "coverage_ratio": 1.0, "valid": True},
+            "global_metrics": {"Laplacian_Clarity": 1.0, "EdgeGrad_mean": 2.0, "sigma_L": 3.0, "sigma_C": 4.0, "score": 5.0, "coverage_ratio": 1.0, "valid": True},
             "region_metrics": {
-                "person": {"sharpness": 1.0, "noise": 2.0, "exposure": 3.0, "score": 4.0, "coverage_ratio": 0.2, "valid": True},
-                "sky": {"sharpness": 1.0, "noise": 2.0, "exposure": 3.0, "score": 4.0, "coverage_ratio": 0.2, "valid": True},
-                "vegetation": {"sharpness": 1.0, "noise": 2.0, "exposure": 3.0, "score": 4.0, "coverage_ratio": 0.2, "valid": True},
-                "background": {"sharpness": 1.0, "noise": 2.0, "exposure": 3.0, "score": 4.0, "coverage_ratio": 0.4, "valid": True},
+                "person": {"Laplacian_Clarity": 1.0, "EdgeGrad_mean": 2.0, "sigma_L": 3.0, "sigma_C": 4.0, "score": 5.0, "coverage_ratio": 0.2, "valid": True},
+                "sky": {"Laplacian_Clarity": 1.0, "EdgeGrad_mean": 2.0, "sigma_L": 3.0, "sigma_C": 4.0, "score": 5.0, "coverage_ratio": 0.2, "valid": True},
+                "vegetation": {"Laplacian_Clarity": 1.0, "EdgeGrad_mean": 2.0, "sigma_L": 3.0, "sigma_C": 4.0, "score": 5.0, "coverage_ratio": 0.2, "valid": True},
+                "background": {"Laplacian_Clarity": 1.0, "EdgeGrad_mean": 2.0, "sigma_L": 3.0, "sigma_C": 4.0, "score": 5.0, "coverage_ratio": 0.4, "valid": True},
             },
             "semantic_structure_metrics": {
                 "person": {
@@ -60,12 +60,12 @@ class StubAnalyzer:
                     "texture_clarity": 5.0,
                 },
             },
-            "final_score": 4.0,
+            "final_score": 5.0,
             "effective_weights": {"person": 0.7, "sky": 0.0, "vegetation": 0.0, "global": 0.3},
-            "score_breakdown": {"person": 2.8, "sky": 0.0, "vegetation": 0.0, "global": 1.2},
+            "score_breakdown": {"person": 3.5, "sky": 0.0, "vegetation": 0.0, "global": 1.5},
             "missing_regions": ["sky", "vegetation"],
             "detected_regions": [
-                {"label": "person", "coverage_ratio": 0.2, "weight": 0.7, "metrics": {"sharpness": 1.0, "noise": 2.0, "exposure": 3.0, "score": 4.0, "coverage_ratio": 0.2, "valid": True}}
+                {"label": "person", "coverage_ratio": 0.2, "weight": 0.7, "metrics": {"Laplacian_Clarity": 1.0, "EdgeGrad_mean": 2.0, "sigma_L": 3.0, "sigma_C": 4.0, "score": 5.0, "coverage_ratio": 0.2, "valid": True}}
             ],
             "suggestions": ["increase sharpening"],
             "visualizations": {
@@ -86,6 +86,30 @@ class StubAnalyzer:
             },
         }
 
+    def compare_base64(self, reference_payload: str, test_payload: str) -> dict:
+        if reference_payload == "not-base64" or test_payload == "not-base64":
+            raise ValueError("invalid base64 image payload")
+        analyzed = self.analyze_base64("ok")
+        return {
+            "reference": analyzed,
+            "test": analyzed,
+            "delta": {
+                "final_score_gap": 0.0,
+                "global_metrics_gap": {
+                    "Laplacian_Clarity": 0.0,
+                    "EdgeGrad_mean": 0.0,
+                    "sigma_L": 0.0,
+                    "sigma_C": 0.0,
+                },
+                "region_score_gap": {
+                    "person": 0.0,
+                    "sky": 0.0,
+                    "vegetation": 0.0,
+                    "background": 0.0,
+                },
+            },
+        }
+
 
 def test_analyze_endpoint_returns_200(monkeypatch):
     monkeypatch.setattr(api, "analyzer", StubAnalyzer())
@@ -101,6 +125,18 @@ def test_analyze_endpoint_returns_200(monkeypatch):
     assert "missing_regions" in body
 
 
+def test_compare_endpoint_returns_200(monkeypatch):
+    monkeypatch.setattr(api, "analyzer", StubAnalyzer())
+    client = TestClient(api.app)
+
+    response = client.post("/compare", json={"reference_image": "ok", "test_image": "ok"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert set(body.keys()) == {"reference", "test", "delta"}
+    assert body["delta"]["final_score_gap"] == 0.0
+
+
 def test_homepage_returns_html():
     client = TestClient(api.app)
     response = client.get("/")
@@ -114,6 +150,15 @@ def test_analyze_endpoint_rejects_invalid_payload(monkeypatch):
     client = TestClient(api.app)
 
     response = client.post("/analyze", json={"image": "not-base64"})
+
+    assert response.status_code == 400
+
+
+def test_compare_endpoint_rejects_invalid_payload(monkeypatch):
+    monkeypatch.setattr(api, "analyzer", StubAnalyzer())
+    client = TestClient(api.app)
+
+    response = client.post("/compare", json={"reference_image": "not-base64", "test_image": "ok"})
 
     assert response.status_code == 400
 

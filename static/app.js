@@ -1,14 +1,18 @@
-const fileInput = document.getElementById("file-input");
+const referenceFileInput = document.getElementById("reference-file-input");
+const testFileInput = document.getElementById("test-file-input");
 const analyzeButton = document.getElementById("analyze-button");
 const statusText = document.getElementById("status-text");
-const sourceImage = document.getElementById("source-image");
+const referenceImage = document.getElementById("reference-image");
+const testImage = document.getElementById("test-image");
 const overlayImage = document.getElementById("overlay-image");
 const structureOverlayImage = document.getElementById("structure-overlay-image");
-const sourceMeta = document.getElementById("source-meta");
+const referenceMeta = document.getElementById("reference-meta");
+const testMeta = document.getElementById("test-meta");
 const requestId = document.getElementById("request-id");
 const finalScore = document.getElementById("final-score");
 const missingRegions = document.getElementById("missing-regions");
 const suggestionsList = document.getElementById("suggestions-list");
+const compareSummary = document.getElementById("compare-summary");
 const weightsGrid = document.getElementById("weights-grid");
 const globalMetrics = document.getElementById("global-metrics");
 const detectedRegions = document.getElementById("detected-regions");
@@ -31,7 +35,8 @@ const structureMaskEls = {
   texture: document.getElementById("mask-texture"),
 };
 
-let selectedFile = null;
+let referenceFile = null;
+let testFile = null;
 
 function setActiveTab(tabName) {
   tabs.forEach((tab) => {
@@ -102,9 +107,10 @@ function renderRegionMetrics(regionMetrics) {
       region,
       metrics.valid ? "yes" : "no",
       formatNumber(metrics.coverage_ratio),
-      formatNumber(metrics.sharpness),
-      formatNumber(metrics.noise),
-      formatNumber(metrics.exposure),
+      formatNumber(metrics.Laplacian_Clarity),
+      formatNumber(metrics.EdgeGrad_mean),
+      formatNumber(metrics.sigma_L),
+      formatNumber(metrics.sigma_C),
       formatNumber(metrics.score),
     ];
     for (const value of values) {
@@ -157,51 +163,65 @@ function renderDetectedRegions(items) {
   }
 }
 
-function renderResults(result) {
-  requestId.textContent = result.request_id || "N/A";
-  finalScore.textContent = formatNumber(result.final_score);
-  renderPills(missingRegions, result.missing_regions || [], "error");
-  renderSuggestions(result.suggestions || []);
-  renderMetricGrid(weightsGrid, result.effective_weights || {});
-  renderMetricGrid(globalMetrics, result.global_metrics || {});
-  renderRegionMetrics(result.region_metrics || {});
-  renderSemanticStructureTable(semanticStructureTable, result.semantic_structure_metrics || {});
-  renderDetectedRegions(result.detected_regions || []);
+function renderCompareResults(result) {
+  const testResult = result.test || {};
+  const referenceResult = result.reference || {};
+  const delta = result.delta || {};
+
+  requestId.textContent = testResult.request_id || "N/A";
+  finalScore.textContent = formatNumber(testResult.final_score);
+  renderPills(missingRegions, testResult.missing_regions || [], "error");
+  renderSuggestions(testResult.suggestions || []);
+  renderMetricGrid(compareSummary, {
+    reference_score: referenceResult.final_score ?? 0,
+    test_score: testResult.final_score ?? 0,
+    final_score_gap: delta.final_score_gap ?? 0,
+  });
+  renderMetricGrid(weightsGrid, testResult.effective_weights || {});
+  renderMetricGrid(globalMetrics, testResult.global_metrics || {});
+  renderRegionMetrics(testResult.region_metrics || {});
+  renderSemanticStructureTable(semanticStructureTable, testResult.semantic_structure_metrics || {});
+  renderDetectedRegions(testResult.detected_regions || []);
   rawJson.textContent = JSON.stringify(result, null, 2);
 
-  overlayImage.src = toDataUrl(result.visualizations.overlay_base64);
-  structureOverlayImage.src = toDataUrl(result.structure_visualizations.overlay_base64);
+  overlayImage.src = toDataUrl(testResult.visualizations.overlay_base64);
+  structureOverlayImage.src = toDataUrl(testResult.structure_visualizations.overlay_base64);
   for (const [region, el] of Object.entries(maskEls)) {
-    const value = result.visualizations.mask_base64[region];
+    const value = testResult.visualizations.mask_base64[region];
     el.src = toDataUrl(value);
   }
   for (const [region, el] of Object.entries(structureMaskEls)) {
-    const value = result.structure_visualizations.mask_base64[region];
+    const value = testResult.structure_visualizations.mask_base64[region];
     el.src = toDataUrl(value);
   }
 }
 
+async function fileToBase64(file) {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result);
+      resolve(result.split(",", 2)[1]);
+    };
+    reader.onerror = () => reject(new Error("Unable to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
 async function analyze() {
-  if (!selectedFile) return;
+  if (!referenceFile || !testFile) return;
 
   analyzeButton.disabled = true;
-  statusText.textContent = "Analyzing image...";
+  statusText.textContent = "Comparing two images...";
 
   try {
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = String(reader.result);
-        resolve(result.split(",", 2)[1]);
-      };
-      reader.onerror = () => reject(new Error("Unable to read file"));
-      reader.readAsDataURL(selectedFile);
-    });
+    const referenceBase64 = await fileToBase64(referenceFile);
+    const testBase64 = await fileToBase64(testFile);
 
-    const response = await fetch("/analyze", {
+    const response = await fetch("/compare", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: base64 }),
+      body: JSON.stringify({ reference_image: referenceBase64, test_image: testBase64 }),
     });
 
     const payload = await response.json();
@@ -209,8 +229,8 @@ async function analyze() {
       throw new Error(payload.detail || "Analysis failed");
     }
 
-    renderResults(payload);
-    statusText.textContent = "Analysis completed.";
+    renderCompareResults(payload);
+    statusText.textContent = "Comparison completed.";
   } catch (error) {
     statusText.textContent = `Error: ${error.message}`;
   } finally {
@@ -218,22 +238,41 @@ async function analyze() {
   }
 }
 
-fileInput.addEventListener("change", () => {
-  selectedFile = fileInput.files[0] || null;
-  analyzeButton.disabled = !selectedFile;
-  if (!selectedFile) {
-    statusText.textContent = "Choose an image to begin.";
+function updateReadyState() {
+  analyzeButton.disabled = !(referenceFile && testFile);
+  statusText.textContent = referenceFile && testFile ? "Ready to compare." : "Choose both images to begin.";
+}
+
+referenceFileInput.addEventListener("change", () => {
+  referenceFile = referenceFileInput.files[0] || null;
+  if (!referenceFile) {
+    referenceMeta.textContent = "No image";
+    updateReadyState();
     return;
   }
-
-  sourceMeta.textContent = `${selectedFile.name} · ${(selectedFile.size / 1024).toFixed(1)} KB`;
-  statusText.textContent = "Ready to analyze.";
-
+  referenceMeta.textContent = `${referenceFile.name} · ${(referenceFile.size / 1024).toFixed(1)} KB`;
   const reader = new FileReader();
   reader.onload = () => {
-    sourceImage.src = reader.result;
+    referenceImage.src = reader.result;
   };
-  reader.readAsDataURL(selectedFile);
+  reader.readAsDataURL(referenceFile);
+  updateReadyState();
+});
+
+testFileInput.addEventListener("change", () => {
+  testFile = testFileInput.files[0] || null;
+  if (!testFile) {
+    testMeta.textContent = "No image";
+    updateReadyState();
+    return;
+  }
+  testMeta.textContent = `${testFile.name} · ${(testFile.size / 1024).toFixed(1)} KB`;
+  const reader = new FileReader();
+  reader.onload = () => {
+    testImage.src = reader.result;
+  };
+  reader.readAsDataURL(testFile);
+  updateReadyState();
 });
 
 analyzeButton.addEventListener("click", analyze);

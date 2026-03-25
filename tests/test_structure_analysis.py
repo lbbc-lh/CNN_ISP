@@ -34,6 +34,14 @@ def test_analyze_structure_returns_overlay_and_mask_visualizations():
     assert set(result.mask_visualizations.keys()) == {"flat", "edge", "texture"}
 
 
+def test_structure_overlay_uses_bgr_convention_of_blue_texture_green_flat_red_edge():
+    image = np.full((32, 32, 3), 128, dtype=np.uint8)
+    result = analyze_structure(image)
+    flat_pixel = result.overlay[0, 0]
+    assert flat_pixel[1] >= flat_pixel[0]
+    assert flat_pixel[1] >= flat_pixel[2]
+
+
 def test_compute_semantic_structure_metrics_returns_three_isp_metrics():
     image = np.zeros((32, 32, 3), dtype=np.uint8)
     image[:, 16:] = 255

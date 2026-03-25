@@ -76,19 +76,20 @@ def build_suggestions(global_metrics: dict, region_metrics: dict[str, dict]) -> 
         if scope != "global" and not metrics.get("valid", False):
             continue
 
-        sharpness = metrics.get("sharpness", 0.0)
-        noise = metrics.get("noise", 0.0)
-        exposure = metrics.get("exposure", 0.0)
+        laplacian_clarity = metrics.get("Laplacian_Clarity", 0.0)
+        edgegrad_mean = metrics.get("EdgeGrad_mean", 0.0)
+        sigma_l = metrics.get("sigma_L", 0.0)
+        sigma_c = metrics.get("sigma_C", 0.0)
 
-        if sharpness < 80:
+        if laplacian_clarity < 60 or edgegrad_mean < 35:
             add("increase face/person detail enhancement" if scope == "person" else "increase sharpening")
-        if noise > 18:
-            add("reduce chroma/luma noise in flat regions" if scope == "sky" else "apply denoising")
-        if exposure < 90:
-            add("increase exposure")
-        if exposure > 185:
-            add("reduce exposure or highlight clipping")
-        if scope == "vegetation" and sharpness < 80 and noise > 18:
+        if sigma_l > 18:
+            add("apply luma denoising")
+        if sigma_c > 18:
+            add("reduce chroma noise")
+        if scope == "sky" and sigma_l > 18:
+            add("reduce chroma/luma noise in flat regions")
+        if scope == "vegetation" and laplacian_clarity < 60 and edgegrad_mean > 80:
             add("reduce sharpening halos in textured regions")
 
     return suggestions
@@ -249,3 +250,30 @@ class ImageQualityAnalyzer:
             time.perf_counter() - start_time,
         )
         return result
+
+    def compare_base64(self, reference_payload: str, test_payload: str) -> dict:
+        reference_result = self.analyze_base64(reference_payload)
+        test_result = self.analyze_base64(test_payload)
+
+        metric_names = ("Laplacian_Clarity", "EdgeGrad_mean", "sigma_L", "sigma_C")
+        global_metrics_gap = {
+            name: float(test_result["global_metrics"].get(name, 0.0) - reference_result["global_metrics"].get(name, 0.0))
+            for name in metric_names
+        }
+        region_score_gap = {
+            region: float(
+                test_result["region_metrics"].get(region, {}).get("score", 0.0)
+                - reference_result["region_metrics"].get(region, {}).get("score", 0.0)
+            )
+            for region in TARGET_REGIONS
+        }
+
+        return {
+            "reference": reference_result,
+            "test": test_result,
+            "delta": {
+                "final_score_gap": float(test_result["final_score"] - reference_result["final_score"]),
+                "global_metrics_gap": global_metrics_gap,
+                "region_score_gap": region_score_gap,
+            },
+        }

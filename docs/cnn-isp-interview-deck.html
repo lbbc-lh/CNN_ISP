@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CNN ISP 项目答辩</title>
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ===========================================
+         CSS CUSTOM PROPERTIES
+         =========================================== */
+      :root {
+        --bg-primary: #121110;
+        --bg-secondary: #191714;
+        --bg-panel: rgba(27, 24, 21, 0.86);
+        --bg-panel-solid: #1b1815;
+        --bg-card: rgba(35, 31, 28, 0.96);
+        --bg-card-soft: rgba(31, 28, 25, 0.82);
+        --text-primary: #f4efe8;
+        --text-secondary: #b8aea2;
+        --text-dark: #f4efe8;
+        --text-dark-soft: #c7bdb2;
+        --accent: #d8a36d;
+        --accent-strong: #8fb7b3;
+        --accent-warm: #c89aa5;
+        --accent-danger: #d2887a;
+        --line: rgba(255, 244, 232, 0.1);
+        --line-strong: rgba(216, 163, 109, 0.24);
+        --shadow: 0 1.4rem 3.2rem rgba(0, 0, 0, 0.28);
+        --font-display: "Manrope", sans-serif;
+        --font-body: "Manrope", sans-serif;
+        --font-mono: "IBM Plex Mono", monospace;
+        --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        --duration-normal: 0.65s;
+        --slide-padding: clamp(1.1rem, 3vw, 3.2rem);
+        --content-gap: clamp(0.7rem, 1.6vw, 1.6rem);
+      }
+
+      /* ===========================================
+         BASE RESET
+         =========================================== */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* ===========================================
+         VIEWPORT FITTING: MANDATORY BASE STYLES
+         Include this ENTIRE file in every presentation.
+         These styles ensure slides fit exactly in the viewport.
+         =========================================== */
+
+      /* 1. Lock html/body to viewport */
+      html, body {
+          height: 100%;
+          overflow-x: hidden;
+      }
+
+      html {
+          scroll-snap-type: y mandatory;
+          scroll-behavior: smooth;
+      }
+
+      /* 2. Each slide = exact viewport height */
+      .slide {
+          width: 100vw;
+          height: 100vh;
+          height: 100dvh; /* Dynamic viewport height for mobile browsers */
+          overflow: hidden; /* CRITICAL: Prevent ANY overflow */
+          scroll-snap-align: start;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+      }
+
+      /* 3. Content container with flex for centering */
+      .slide-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          max-height: 100%;
+          overflow: hidden; /* Double-protection against overflow */
+          padding: var(--slide-padding);
+      }
+
+      /* 4. ALL typography uses clamp() for responsive scaling */
+      :root {
+          /* Titles scale from mobile to desktop */
+          --title-size: clamp(1.5rem, 5vw, 4rem);
+          --h2-size: clamp(1.25rem, 3.5vw, 2.5rem);
+          --h3-size: clamp(1rem, 2.5vw, 1.75rem);
+
+          /* Body text */
+          --body-size: clamp(0.75rem, 1.5vw, 1.125rem);
+          --small-size: clamp(0.65rem, 1vw, 0.875rem);
+
+          /* Spacing scales with viewport */
+          --slide-padding: clamp(1rem, 4vw, 4rem);
+          --content-gap: clamp(0.5rem, 2vw, 2rem);
+          --element-gap: clamp(0.25rem, 1vw, 1rem);
+      }
+
+      /* 5. Cards/containers use viewport-relative max sizes */
+      .card, .container, .content-box {
+          max-width: min(90vw, 1000px);
+          max-height: min(80vh, 700px);
+      }
+
+      /* 6. Lists auto-scale with viewport */
+      .feature-list, .bullet-list {
+          gap: clamp(0.4rem, 1vh, 1rem);
+      }
+
+      .feature-list li, .bullet-list li {
+          font-size: var(--body-size);
+          line-height: 1.4;
+      }
+
+      /* 7. Grids adapt to available space */
+      .grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+          gap: clamp(0.5rem, 1.5vw, 1rem);
+      }
+
+      /* 8. Images constrained to viewport */
+      img, .image-container {
+          max-width: 100%;
+          max-height: min(50vh, 400px);
+          object-fit: contain;
+      }
+
+      /* ===========================================
+         RESPONSIVE BREAKPOINTS
+         Aggressive scaling for smaller viewports
+         =========================================== */
+
+      /* Short viewports (< 700px height) */
+      @media (max-height: 700px) {
+          :root {
+              --slide-padding: clamp(0.75rem, 3vw, 2rem);
+              --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+              --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
+              --h2-size: clamp(1rem, 3vw, 1.75rem);
+          }
+      }
+
+      /* Very short viewports (< 600px height) */
+      @media (max-height: 600px) {
+          :root {
+              --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+              --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+              --title-size: clamp(1.1rem, 4vw, 2rem);
+              --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
+          }
+
+          /* Hide non-essential elements */
+          .nav-dots, .keyboard-hint, .decorative {
+              display: none;
+          }
+      }
+
+      /* Extremely short (landscape phones, < 500px height) */
+      @media (max-height: 500px) {
+          :root {
+              --slide-padding: clamp(0.4rem, 2vw, 1rem);
+              --title-size: clamp(1rem, 3.5vw, 1.5rem);
+              --h2-size: clamp(0.9rem, 2.5vw, 1.25rem);
+              --body-size: clamp(0.65rem, 1vw, 0.85rem);
+          }
+      }
+
+      /* Narrow viewports (< 600px width) */
+      @media (max-width: 600px) {
+          :root {
+              --title-size: clamp(1.25rem, 7vw, 2.5rem);
+          }
+
+          /* Stack grids vertically */
+          .grid,
+          .problem-layout,
+          .goal-strip,
+          .flow-branches {
+              grid-template-columns: 1fr;
+          }
+      }
+
+      /* ===========================================
+         REDUCED MOTION
+         Respect user preferences
+         =========================================== */
+      @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+              animation-duration: 0.01ms !important;
+              transition-duration: 0.2s !important;
+          }
+
+          html {
+              scroll-behavior: auto;
+          }
+      }
+
+      /* ===========================================
+         GLOBAL PRESENTATION STYLES
+         =========================================== */
+      body {
+        background:
+          radial-gradient(circle at 12% 16%, rgba(143, 183, 179, 0.14), transparent 24%),
+          radial-gradient(circle at 82% 14%, rgba(216, 163, 109, 0.12), transparent 24%),
+          linear-gradient(180deg, #11100f 0%, #171513 52%, #1c1916 100%);
+        color: var(--text-primary);
+        font-family: var(--font-body);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 244, 232, 0.028) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 244, 232, 0.028) 1px, transparent 1px);
+        background-size: clamp(1.8rem, 3vw, 3rem) clamp(1.8rem, 3vw, 3rem);
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.8), transparent 88%);
+        pointer-events: none;
+      }
+
+      .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: clamp(0.18rem, 0.4vh, 0.28rem);
+        background: rgba(255, 244, 232, 0.08);
+        z-index: 20;
+      }
+
+      .progress-bar::after {
+        content: "";
+        display: block;
+        width: var(--progress, 0%);
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+        box-shadow: 0 0 1rem rgba(216, 163, 109, 0.22);
+      }
+
+      .nav-dots {
+        position: fixed;
+        top: 50%;
+        right: clamp(0.55rem, 1.4vw, 1.2rem);
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: clamp(0.35rem, 0.8vw, 0.55rem);
+        z-index: 20;
+      }
+
+      .nav-dots button {
+        width: clamp(0.6rem, 1vw, 0.82rem);
+        height: clamp(0.6rem, 1vw, 0.82rem);
+        border-radius: 50%;
+        border: 0;
+        background: rgba(255, 244, 232, 0.16);
+        cursor: pointer;
+        transition: transform 0.25s ease, background 0.25s ease;
+      }
+
+      .nav-dots button.active {
+        background: var(--accent);
+        transform: scale(1.18);
+      }
+
+      .section-id,
+      .section-tag,
+      .eyebrow {
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+      }
+
+      .section-id {
+        color: var(--accent);
+        font-size: clamp(0.68rem, 0.9vw, 0.86rem);
+      }
+
+      .section-tag {
+        font-size: clamp(0.64rem, 0.82vw, 0.8rem);
+        color: var(--text-secondary);
+      }
+
+      .eyebrow {
+        color: var(--accent-strong);
+        font-size: clamp(0.7rem, 0.9vw, 0.88rem);
+      }
+
+      h1,
+      h2,
+      h3 {
+        font-family: var(--font-display);
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 6.4vw, 5.8rem);
+        line-height: 0.94;
+      }
+
+      h2 {
+        font-size: var(--h2-size);
+        line-height: 1;
+      }
+
+      h3 {
+        font-size: clamp(0.95rem, 1.5vw, 1.25rem);
+        line-height: 1.12;
+      }
+
+      p,
+      li,
+      dd,
+      dt,
+      span {
+        font-size: var(--body-size);
+      }
+
+      .slide-shell {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(0.8rem, 1.6vw, 1.4rem);
+        height: 100%;
+      }
+
+      .slide-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .slide-title {
+        display: grid;
+        gap: clamp(0.35rem, 0.8vw, 0.65rem);
+      }
+
+      .lede {
+        max-width: 66ch;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+
+      .title-slide .slide-content {
+        justify-content: space-between;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.45fr 0.9fr;
+        gap: clamp(1rem, 2vw, 1.6rem);
+        align-items: end;
+        min-height: 0;
+      }
+
+      .hero-copy {
+        display: grid;
+        gap: clamp(0.65rem, 1.4vw, 1rem);
+      }
+
+      .hero-copy p {
+        max-width: 46ch;
+        color: var(--text-secondary);
+        line-height: 1.52;
+        font-size: clamp(0.9rem, 1.6vw, 1.18rem);
+      }
+
+      .hero-panel,
+      .metric-card,
+      .dark-card {
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: clamp(1rem, 1.8vw, 1.6rem);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
+      }
+
+      .hero-panel {
+        padding: clamp(1rem, 1.8vw, 1.4rem);
+        display: grid;
+        gap: clamp(0.7rem, 1.2vw, 1rem);
+      }
+
+      .stats-row,
+      .pill-row,
+      .score-band,
+      .weights-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: clamp(0.45rem, 0.9vw, 0.75rem);
+      }
+
+      .stat-chip,
+      .pill,
+      .weight-chip {
+        border-radius: 999px;
+        padding: clamp(0.32rem, 0.7vw, 0.46rem) clamp(0.7rem, 1vw, 0.95rem);
+        border: 1px solid rgba(255, 244, 232, 0.1);
+        background: rgba(255, 244, 232, 0.06);
+        color: var(--text-primary);
+        font-size: clamp(0.72rem, 1vw, 0.86rem);
+      }
+
+      .weight-chip {
+        background: rgba(143, 183, 179, 0.1);
+        border-color: rgba(143, 183, 179, 0.2);
+      }
+
+      .pill.warn {
+        color: #f0c59b;
+        border-color: rgba(216, 163, 109, 0.24);
+      }
+
+      .pill.bad {
+        color: #e5b8c1;
+        border-color: rgba(200, 154, 165, 0.22);
+      }
+
+      .grid-2,
+      .grid-3,
+      .grid-4 {
+        display: grid;
+        gap: clamp(0.7rem, 1.2vw, 1rem);
+        min-height: 0;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .metric-card,
+      .light-card {
+        padding: clamp(0.8rem, 1.3vw, 1.1rem);
+        display: grid;
+        gap: clamp(0.45rem, 0.8vw, 0.7rem);
+      }
+
+      .metric-card h3,
+      .light-card h3 {
+        color: var(--text-primary);
+      }
+
+      .metric-card p,
+      .metric-card li,
+      .dark-card p,
+      .dark-card li {
+        color: var(--text-secondary);
+        line-height: 1.45;
+      }
+
+      .light-surface {
+        background: var(--bg-card);
+        color: var(--text-dark);
+        border: 1px solid rgba(255, 244, 232, 0.08);
+        border-radius: clamp(1rem, 1.8vw, 1.4rem);
+        box-shadow: var(--shadow);
+      }
+
+      .light-card {
+        background: transparent;
+      }
+
+      .light-card p,
+      .light-card li,
+      .light-card dt,
+      .light-card dd {
+        color: var(--text-dark-soft);
+        line-height: 1.44;
+      }
+
+      .list-tight {
+        list-style: none;
+        display: grid;
+        gap: clamp(0.35rem, 0.7vw, 0.5rem);
+      }
+
+      .list-tight li::before {
+        content: "•";
+        color: var(--accent);
+        margin-right: 0.45rem;
+      }
+
+      .process-flow {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: clamp(0.55rem, 1vw, 0.8rem);
+        align-items: stretch;
+      }
+
+      .process-flow.compact-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .process-flow.compact-4 .flow-step {
+        padding: clamp(0.65rem, 0.95vw, 0.82rem);
+      }
+
+      .process-flow.compact-4 .flow-step strong {
+        font-size: clamp(0.76rem, 0.98vw, 0.9rem);
+      }
+
+      .process-flow.compact-4 .flow-step small {
+        font-size: clamp(0.62rem, 0.8vw, 0.74rem);
+      }
+
+      .problem-layout {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: clamp(0.7rem, 1.1vw, 0.9rem);
+        min-height: 0;
+      }
+
+      .flowchart-card,
+      .problem-note-card {
+        padding: clamp(0.8rem, 1.25vw, 1rem);
+        display: grid;
+        gap: clamp(0.4rem, 0.7vw, 0.55rem);
+        background: var(--bg-panel);
+        border-color: var(--line);
+      }
+
+      .problem-panels {
+        display: grid;
+        gap: clamp(0.35rem, 0.65vw, 0.5rem);
+      }
+
+      .mini-flow {
+        display: grid;
+        gap: clamp(0.45rem, 0.7vw, 0.55rem);
+      }
+
+      .mini-flow-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: clamp(0.45rem, 0.7vw, 0.55rem);
+      }
+
+      .mini-node,
+      .mini-note {
+        padding: clamp(0.5rem, 0.75vw, 0.62rem) clamp(0.58rem, 0.9vw, 0.74rem);
+        border-radius: clamp(0.72rem, 1vw, 0.9rem);
+        border: 1px solid var(--line);
+        background: rgba(255, 244, 232, 0.05);
+      }
+
+      .mini-note {
+        background: rgba(255, 244, 232, 0.09);
+        border-color: var(--line-strong);
+      }
+
+      .mini-node strong,
+      .mini-note strong {
+        display: block;
+        font-size: clamp(0.76rem, 1vw, 0.88rem);
+        line-height: 1.2;
+      }
+
+      .mini-node span,
+      .mini-note span {
+        display: block;
+        margin-top: 0.15rem;
+        color: var(--text-secondary);
+        font-size: clamp(0.62rem, 0.82vw, 0.76rem);
+        line-height: 1.25;
+      }
+
+      .mini-flow-caption {
+        color: var(--text-secondary);
+        font-size: clamp(0.66rem, 0.82vw, 0.76rem);
+        line-height: 1.3;
+      }
+
+      .goal-strip {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: clamp(0.35rem, 0.65vw, 0.5rem);
+      }
+
+      .comparison-flow {
+        display: grid;
+        gap: clamp(0.6rem, 0.9vw, 0.75rem);
+      }
+
+      .flow-lane {
+        display: grid;
+        gap: clamp(0.4rem, 0.65vw, 0.5rem);
+      }
+
+      .flow-lane-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+
+      .flow-lane-head p {
+        color: var(--text-secondary);
+        font-size: clamp(0.66rem, 0.84vw, 0.78rem);
+      }
+
+      .lane-steps {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: clamp(0.42rem, 0.65vw, 0.5rem);
+      }
+
+      .lane-step {
+        padding: clamp(0.55rem, 0.8vw, 0.68rem);
+        border-radius: clamp(0.8rem, 1vw, 0.95rem);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .lane-step strong,
+      .lane-step span {
+        display: block;
+      }
+
+      .lane-step strong {
+        font-size: clamp(0.74rem, 0.95vw, 0.86rem);
+        line-height: 1.18;
+      }
+
+      .lane-step span {
+        margin-top: 0.18rem;
+        color: var(--text-secondary);
+        font-size: clamp(0.62rem, 0.8vw, 0.74rem);
+        line-height: 1.24;
+      }
+
+      .lane-step.emphasis {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.14);
+      }
+
+      .problem-note-card h3,
+      .problem-note-card p,
+      .problem-note-card li {
+        color: var(--text-primary);
+      }
+
+      .problem-note-card p,
+      .problem-note-card li {
+        color: var(--text-secondary);
+      }
+
+      .flow-step {
+        padding: clamp(0.8rem, 1.2vw, 1rem);
+        border-radius: clamp(0.9rem, 1.4vw, 1.2rem);
+        background: rgba(255, 244, 232, 0.05);
+        border: 1px solid var(--line);
+        display: grid;
+        gap: 0.42rem;
+        position: relative;
+      }
+
+      .flow-step:not(:last-child)::after {
+        content: "→";
+        position: absolute;
+        right: calc(-1 * clamp(0.5rem, 1vw, 0.8rem));
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255, 244, 232, 0.4);
+        font-size: clamp(1rem, 1.4vw, 1.3rem);
+      }
+
+      .flow-step strong,
+      .flow-step small {
+        display: block;
+      }
+
+      .flow-step strong {
+        font-size: clamp(0.84rem, 1.15vw, 1rem);
+      }
+
+      .flow-step small {
+        color: var(--text-secondary);
+        line-height: 1.35;
+      }
+
+      .formula {
+        font-family: var(--font-mono);
+        font-size: clamp(0.7rem, 1vw, 0.88rem);
+        color: var(--accent-strong);
+        background: rgba(143, 183, 179, 0.08);
+        border: 1px solid rgba(143, 183, 179, 0.18);
+        border-radius: 0.85rem;
+        padding: 0.7rem 0.8rem;
+      }
+
+      .two-band {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: clamp(0.8rem, 1.5vw, 1.2rem);
+        min-height: 0;
+      }
+
+      .image-panel {
+        display: grid;
+        gap: clamp(0.45rem, 0.8vw, 0.7rem);
+        padding: clamp(0.8rem, 1.2vw, 1rem);
+        background: rgba(255, 244, 232, 0.05);
+        border: 1px solid var(--line);
+        border-radius: clamp(0.85rem, 1.2vw, 1.1rem);
+      }
+
+      .image-panel strong {
+        font-size: clamp(0.8rem, 1.05vw, 0.95rem);
+      }
+
+      .image-frame {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 0;
+        background:
+          linear-gradient(180deg, rgba(43, 38, 34, 0.92), rgba(29, 26, 23, 0.9));
+        border-radius: clamp(0.8rem, 1vw, 1rem);
+        padding: clamp(0.4rem, 0.8vw, 0.7rem);
+        overflow: hidden;
+      }
+
+      .image-frame img {
+        width: 100%;
+        border-radius: 0.55rem;
+        object-fit: contain;
+      }
+
+      .dark-card {
+        padding: clamp(0.9rem, 1.4vw, 1.2rem);
+        display: grid;
+        gap: clamp(0.45rem, 0.8vw, 0.7rem);
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: clamp(0.4rem, 0.7vw, 0.6rem);
+      }
+
+      .metric-grid .kv {
+        padding: 0.6rem 0.7rem;
+        border-radius: 0.8rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .kv span,
+      .kv strong {
+        display: block;
+      }
+
+      .kv span {
+        color: var(--text-secondary);
+        font-size: clamp(0.68rem, 0.9vw, 0.8rem);
+      }
+
+      .kv strong {
+        margin-top: 0.18rem;
+        font-size: clamp(0.84rem, 1.12vw, 0.98rem);
+      }
+
+      .mono-box {
+        font-family: var(--font-mono);
+        font-size: clamp(0.65rem, 0.86vw, 0.8rem);
+        line-height: 1.46;
+        color: var(--text-primary);
+        background: rgba(255, 244, 232, 0.06);
+        border-radius: 0.95rem;
+        padding: 0.85rem;
+        border: 1px solid var(--line);
+        white-space: pre-wrap;
+      }
+
+      .closing-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: clamp(0.9rem, 1.6vw, 1.3rem);
+        align-items: stretch;
+      }
+
+      .closing-panel {
+        padding: clamp(1rem, 1.8vw, 1.4rem);
+        border-radius: clamp(1rem, 1.6vw, 1.4rem);
+        background: rgba(255, 244, 232, 0.05);
+        border: 1px solid var(--line);
+        display: grid;
+        gap: clamp(0.5rem, 0.9vw, 0.75rem);
+      }
+
+      .metric-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: var(--small-size);
+      }
+
+      .metric-table th,
+      .metric-table td {
+        text-align: left;
+        vertical-align: top;
+        padding: clamp(0.5rem, 0.8vw, 0.68rem);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .metric-table th {
+        color: var(--accent);
+        font-family: var(--font-mono);
+        font-size: clamp(0.64rem, 0.82vw, 0.76rem);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .metric-table td {
+        color: var(--text-secondary);
+        line-height: 1.35;
+      }
+
+      .closing-panel ul {
+        list-style: none;
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .closing-panel li::before {
+        content: "▸";
+        color: var(--accent);
+        margin-right: 0.45rem;
+      }
+
+      .footer-bar {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        color: var(--text-secondary);
+        font-size: var(--small-size);
+      }
+
+      /* ===========================================
+         ANIMATIONS
+         =========================================== */
+      .reveal {
+        opacity: 0;
+        transform: translateY(1.6rem);
+        transition:
+          opacity var(--duration-normal) var(--ease-out-expo),
+          transform var(--duration-normal) var(--ease-out-expo);
+      }
+
+      .reveal-left {
+        opacity: 0;
+        transform: translateX(-2rem);
+        transition:
+          opacity var(--duration-normal) var(--ease-out-expo),
+          transform var(--duration-normal) var(--ease-out-expo);
+      }
+
+      .reveal-scale {
+        opacity: 0;
+        transform: scale(0.94);
+        transition:
+          opacity var(--duration-normal) var(--ease-out-expo),
+          transform var(--duration-normal) var(--ease-out-expo);
+      }
+
+      .slide.visible .reveal,
+      .slide.visible .reveal-left,
+      .slide.visible .reveal-scale {
+        opacity: 1;
+        transform: none;
+      }
+
+      .reveal:nth-child(1) { transition-delay: 0.06s; }
+      .reveal:nth-child(2) { transition-delay: 0.12s; }
+      .reveal:nth-child(3) { transition-delay: 0.18s; }
+      .reveal:nth-child(4) { transition-delay: 0.24s; }
+
+      /* ===========================================
+         RESPONSIVE LAYOUT OVERRIDES
+         =========================================== */
+      @media (max-width: 980px) {
+        .hero-grid,
+        .two-band,
+        .closing-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .process-flow {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .flow-step:not(:last-child)::after {
+          display: none;
+        }
+
+        .grid-4 {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="progress-bar"></div>
+    <nav class="nav-dots" aria-label="Slide navigation"></nav>
+
+    <!-- ===========================================
+         SLIDE 1: COVER
+         =========================================== -->
+    <section class="slide title-slide">
+      <div class="slide-content">
+        <div class="slide-shell">
+          <div class="slide-head reveal">
+            <span class="section-id">01 / Interview Defense</span>
+            <span class="section-tag">CNN + ISP + FastAPI</span>
+          </div>
+          <div class="hero-copy">
+            <p class="eyebrow reveal">面向 ISP 调试辅助的工程化工具</p>
+            <h1 class="reveal">CNN ISP</h1>
+            <p class="reveal">
+              把“看图调参”收敛成一套可解释、可复核、可演示的调试辅助流程。
+            </p>
+            <div class="stats-row reveal">
+              <span class="stat-chip">FastAPI</span>
+              <span class="stat-chip">SegFormer</span>
+              <span class="stat-chip">Semantic + Structure</span>
+            </div>
+          </div>
+          <div class="footer-bar reveal">
+            <span>关键词：可解释 / 可演示 / 工程化</span>
+            <span>输入 Base64 图像，输出分数、建议与 Overlay</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 2: PROBLEM + GOAL
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-content">
+        <div class="slide-shell">
+          <div class="slide-head reveal">
+            <div class="slide-title">
+              <span class="section-id">02 / Problem + Goal</span>
+              <h2>为什么做这个项目 + 目标边界</h2>
+            </div>
+            <span class="section-tag">把“看图调参”变成可解释工具</span>
+          </div>
+          <p class="lede reveal">
+            传统 ISP 调试是重人力、长周期、强经验依赖的流程。这个项目要做的不是替代工程师，而是先让算法自动跑完第一轮，再把人工精力留给真正有价值的微调。
+          </p>
+          <div class="problem-layout">
+            <article class="dark-card flowchart-card reveal-left">
+              <h3>流程对比</h3>
+              <span class="section-tag">传统 ISP 调试流程</span>
+              <div class="process-flow compact-4">
+                <div class="flow-step">
+                  <strong>多设备准备 + 多场景拍摄</strong>
+                  <small>不同 sensor / 镜头，人像 / 夜景 / 风景</small>
+                </div>
+                <div class="flow-step">
+                  <strong>导出图像数据 + 人工评估图像质量</strong>
+                  <small>清晰度 / 噪声 / 曝光</small>
+                </div>
+                <div class="flow-step">
+                  <strong>手动调整 ISP 参数</strong>
+                  <small>重新编译 / 刷机 / 应用参数</small>
+                </div>
+                <div class="flow-step">
+                  <strong>再次拍摄验证</strong>
+                  <small>评测是否通过? 评测不通过 -> 全流程重跑</small>
+                </div>
+              </div>
+              <span class="section-tag">最终目标</span>
+              <div class="process-flow compact-4">
+                <div class="flow-step">
+                  <strong>输入图像</strong>
+                  <small>自动化流程起点</small>
+                </div>
+                <div class="flow-step">
+                  <strong>算法自动评估</strong>
+                  <small>CNN + CV 指标</small>
+                </div>
+                <div class="flow-step">
+                  <strong>自动生成调参建议</strong>
+                  <small>自动完成第一轮调参</small>
+                </div>
+                <div class="flow-step">
+                  <strong>人工微调</strong>
+                  <small>最终结果</small>
+                </div>
+              </div>
+              <p class="mini-flow-caption">从 完全人工调参 走向 算法自动调一轮 + 人工微调。</p>
+            </article>
+            <div class="problem-panels">
+              <article class="dark-card problem-note-card reveal-scale">
+                <h3>为什么需要这个项目</h3>
+                <ul class="list-tight">
+                  <li>高度依赖人工经验，主观性强</li>
+                  <li>需要多设备、多场景反复拍摄</li>
+                  <li>调参周期长，常常数小时甚至数天</li>
+                  <li>评测不通过 -> 全流程重跑</li>
+                  <li>效率低且不可规模化</li>
+                </ul>
+              </article>
+              <div class="goal-strip reveal">
+                <div class="dark-card problem-note-card">
+                  <h3>项目愿景</h3>
+                  <p>自动完成 80% 调参工作，人工只负责最终视觉优化和特殊 case 微调。</p>
+                </div>
+                <div class="dark-card problem-note-card">
+                  <h3>预期效果</h3>
+                  <p>调试时间下降、调参效率提升，结果更稳定且可复现。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="pill-row reveal">
+            <span class="pill">本质问题：人眼评估 + 手动调参 = 高成本 + 不稳定</span>
+            <span class="pill warn">目标：算法先做 80%，人工补最后 20%</span>
+            <span class="pill bad">定位：自动化第一轮调参辅助系统</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 3: ARCHITECTURE
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-content">
+        <div class="slide-shell">
+          <div class="slide-head reveal">
+            <div class="slide-title">
+              <span class="section-id">03 / Architecture</span>
+              <h2>系统架构与处理流程</h2>
+            </div>
+            <span class="section-tag">输入图像 -> 分析 -> 建议 -> 可视化</span>
+          </div>
+          <div class="process-flow reveal">
+            <div class="flow-step">
+              <span class="section-tag">Step 1</span>
+              <strong>Decode</strong>
+              <small>接收 base64 图像并转成 OpenCV 可处理格式。</small>
+            </div>
+            <div class="flow-step">
+              <span class="section-tag">Step 2</span>
+              <strong>Semantic Segmentation</strong>
+              <small>识别人、天空、植被和背景等语义区域。</small>
+            </div>
+            <div class="flow-step">
+              <span class="section-tag">Step 3</span>
+              <strong>Metric + Structure</strong>
+              <small>计算清晰度/锐度与亮度/色度噪声指标，并做 flat/edge/texture 分区。</small>
+            </div>
+            <div class="flow-step">
+              <span class="section-tag">Step 4</span>
+              <strong>Score + Suggest</strong>
+              <small>合成总分并生成可回溯的调参建议。</small>
+            </div>
+            <div class="flow-step">
+              <span class="section-tag">Step 5</span>
+              <strong>Serve + Visualize</strong>
+              <small>通过 API、UI、overlay 和 JSON 对外展示结果。</small>
+            </div>
+          </div>
+          <div class="grid-2">
+            <article class="dark-card reveal-left">
+              <h3>后端模块</h3>
+              <div class="metric-grid">
+                <div class="kv">
+                  <span>segmentation.py</span>
+                  <strong>语义分割与 mask 生成</strong>
+                </div>
+                <div class="kv">
+                  <span>metrics.py</span>
+                  <strong>质量指标计算</strong>
+                </div>
+                <div class="kv">
+                  <span>structure_analysis.py</span>
+                  <strong>结构区域划分</strong>
+                </div>
+                <div class="kv">
+                  <span>analyzer.py</span>
+                  <strong>总编排、评分、建议输出</strong>
+                </div>
+              </div>
+            </article>
+            <article class="dark-card reveal-left">
+              <h3>交付接口</h3>
+              <ul class="list-tight">
+                <li>`POST /analyze` 返回结构化 JSON</li>
+                <li>`GET /` 提供本地调试 UI</li>
+                <li>结果文件落到 `outputs/` 便于复核</li>
+                <li>浏览器直接查看图、mask、分数和建议</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 4: SEMANTIC FLOW
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-content">
+        <div class="slide-shell">
+          <div class="slide-head reveal">
+            <div class="slide-title">
+              <span class="section-id">04 / Semantic Flow</span>
+              <h2>语义分区流程</h2>
+            </div>
+            <span class="section-tag">代码路径：segmentation.py</span>
+          </div>
+          <div class="process-flow reveal">
+            <div class="flow-step">
+              <span class="section-tag">Step 1</span>
+              <strong>输入 BGR 图像</strong>
+              <small>分析器先完成 base64 解码，再把图像送入分割模块。</small>
+            </div>
+            <div class="flow-step">
+              <span class="section-tag">Step 2</span>
+              <strong>转 RGB + Processor</strong>
+              <small>用 `AutoImageProcessor` 按 SegFormer 输入格式做预处理。</small>
+            </div>
+            <div class="flow-step">
+              <span class="section-tag">Step 3</span>
+              <strong>SegFormer 推理</strong>
+              <small>使用 `nvidia/segformer-b2-finetuned-ade-512-512` 输出 logits。</small>
+            </div>
+            <div class="flow-step">
+              <span class="section-tag">Step 4</span>
+              <strong>上采样 + argmax</strong>
+              <small>把 logits 上采样回原图尺寸，再用 argmax 得到 2D label map。</small>
+            </div>
+            <div class="flow-step">
+              <span class="section-tag">Step 5</span>
+              <strong>ADE20K 标签映射</strong>
+              <small>聚合成 person / sky / vegetation / background 四类 mask。</small>
+            </div>
+          </div>
+          <div class="two-band">
+            <article class="dark-card reveal-left">
+              <h3>为什么这样做</h3>
+              <ul class="list-tight">
+                <li>先用大模型给出像素级语义，再压缩成答辩真正关心的少数区域</li>
+                <li>background 由“非前景区域”自动补全，避免遗漏无标签部分</li>
+                <li>后续所有区域指标都直接依赖这些 mask，不需要重复分割</li>
+              </ul>
+            </article>
+            <article class="dark-card reveal-left">
+              <h3>这一步产出什么</h3>
+              <ul class="list-tight">
+                <li>一张和原图同尺寸的语义 label map</li>
+                <li>person / sky / vegetation / background 四类 mask</li>
+                <li>可直接进入区域评分和 overlay 展示的分区结果</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 5: STRUCTURE FLOW
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-content">
+        <div class="slide-shell">
+          <div class="slide-head reveal">
+            <div class="slide-title">
+              <span class="section-id">05 / Structure Flow</span>
+              <h2>结构分区流程</h2>
+            </div>
+            <span class="section-tag">代码路径：structure_analysis.py</span>
+          </div>
+          <div class="process-flow compact-4 reveal">
+            <div class="flow-step">
+              <span class="section-tag">Step 1</span>
+              <strong>转灰度图</strong>
+              <small>如果输入是彩色图，先转成灰度，后续结构特征都在灰度域计算。</small>
+            </div>
+            <div class="flow-step">
+              <span class="section-tag">Step 2</span>
+              <strong>Sobel + 局部方差</strong>
+              <small>同时得到 gradient map 和 variance map。</small>
+            </div>
+            <div class="flow-step">
+              <span class="section-tag">Step 3</span>
+              <strong>阈值划分 mask</strong>
+              <small>固定阈值：高梯度是 edge；低梯度且低局部方差是 flat；其余归 texture。</small>
+            </div>
+            <div class="flow-step">
+              <span class="section-tag">Step 4</span>
+              <strong>叠加到语义区域</strong>
+              <small>计算 flat / edge / texture 与语义 mask 的交集，用于结构指标和建议生成。</small>
+            </div>
+          </div>
+          <div class="two-band">
+            <article class="dark-card reveal-left">
+              <h3>这一步产出什么</h3>
+              <ul class="list-tight">
+                <li>flat / edge / texture 三类结构 mask</li>
+                <li>gradient map 和 variance map</li>
+                <li>可与语义区域交叉分析的结构结果</li>
+              </ul>
+            </article>
+            <article class="dark-card reveal-left">
+              <h3>怎么接到评分</h3>
+              <ul class="list-tight">
+                <li>基础分数：Laplacian_Clarity、EdgeGrad_mean、sigma_L、sigma_C</li>
+                <li>结构分区负责解释噪点在 flat，锐度在 edge，清晰度在 texture 哪里出问题</li>
+                <li>最终再结合 person 0.5 / sky 0.2 / vegetation 0.2 / global 0.1 做输出</li>
+              </ul>
+              <div class="formula">score = 0.35 * Laplacian_Clarity + 0.25 * EdgeGrad_mean + 0.2 * sigma_L + 0.2 * sigma_C</div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 6: EXPERIMENT
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-content">
+        <div class="slide-shell">
+          <div class="slide-head reveal">
+            <div class="slide-title">
+              <span class="section-id">06 / Experiment</span>
+              <h2>实验结果：从分区到建议</h2>
+            </div>
+            <span class="section-tag">一页讲清“看到了什么，得出了什么”</span>
+          </div>
+          <div class="two-band">
+            <div class="grid-2 reveal-scale">
+              <div class="image-panel">
+                <strong>输入图像</strong>
+                <div class="image-frame">
+                  <img src="./presentation-assets/source-image.png" alt="source image" />
+                </div>
+              </div>
+              <div class="image-panel">
+                <strong>Semantic Overlay</strong>
+                <div class="image-frame">
+                  <img src="./presentation-assets/semantic-overlay.png" alt="semantic overlay" />
+                </div>
+              </div>
+              <div class="image-panel">
+                <strong>Structure Overlay</strong>
+                <div class="image-frame">
+                  <img src="./presentation-assets/structure-overlay.png" alt="structure overlay" />
+                </div>
+              </div>
+              <div class="image-panel">
+                <strong>代表性 Mask</strong>
+                <div class="image-frame">
+                  <img src="./presentation-assets/flat-mask.png" alt="flat mask" />
+                </div>
+              </div>
+            </div>
+            <article class="dark-card reveal-left">
+              <h3>关键观察</h3>
+              <div class="metric-grid">
+                <div class="kv">
+                  <span>final_score</span>
+                  <strong>54.39</strong>
+                </div>
+                <div class="kv">
+                  <span>person weight</span>
+                  <strong>0.625</strong>
+                </div>
+                <div class="kv">
+                  <span>sky weight</span>
+                  <strong>0.25</strong>
+                </div>
+                <div class="kv">
+                  <span>global weight</span>
+                  <strong>0.125</strong>
+                </div>
+              </div>
+              <div class="mono-box">suggestions:
+- apply denoising
+- increase sharpening
+- reduce chroma/luma noise in flat regions</div>
+              <ul class="list-tight">
+                <li>人物面积不大，但因主体权重高，仍显著影响总分</li>
+                <li>天空和平坦区问题被单独暴露出来，不再被全局均值掩盖</li>
+                <li>建议可回溯到区域和指标，不是泛化描述</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 7: CHALLENGES + ROADMAP
+         =========================================== -->
+    <section class="slide">
+      <div class="slide-content">
+        <div class="slide-shell">
+          <div class="slide-head reveal">
+            <div class="slide-title">
+              <span class="section-id">07 / Challenges + Next</span>
+              <h2>难点、取舍与下一步</h2>
+            </div>
+            <span class="section-tag">Q&amp;A</span>
+          </div>
+          <div class="grid-3">
+            <article class="metric-card reveal">
+              <h3>难点 1</h3>
+              <p>区域经常缺失，所以我没有强行置零，而是只对有效区域做重归一化。</p>
+            </article>
+            <article class="metric-card reveal">
+              <h3>难点 2</h3>
+              <p>建议系统如果太复杂就难解释，所以当前优先采用可回溯的规则法。</p>
+            </article>
+            <article class="metric-card reveal">
+              <h3>难点 3</h3>
+              <p>模型下载不稳定，因此测试更聚焦映射逻辑、指标函数和 API 结构。</p>
+            </article>
+          </div>
+          <div class="grid-2">
+            <article class="dark-card reveal-left">
+              <h3>当前取舍</h3>
+              <ul class="list-tight">
+                <li>先把分析闭环和演示体验做完整</li>
+                <li>先保证可解释，再追求更复杂策略</li>
+                <li>先服务面试和调试，再做生产级优化</li>
+              </ul>
+            </article>
+            <article class="dark-card reveal-left">
+              <h3>下一步</h3>
+              <ul class="list-tight">
+                <li>补更多场景数据，校准阈值和权重</li>
+                <li>加入更多 ISP 相关失真指标</li>
+                <li>支持多版本结果对比和报告导出</li>
+              </ul>
+            </article>
+          </div>
+          <div class="footer-bar reveal">
+            <span>如果需要，我可以继续展开模块设计、实验解释或后续平台化方向</span>
+            <span>关键词：模块化 / 可解释 / 可演示</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      /* ===========================================
+         SLIDE PRESENTATION CONTROLLER
+         =========================================== */
+      class SlidePresentation {
+        constructor() {
+          this.slides = Array.from(document.querySelectorAll(".slide"));
+          this.currentSlide = 0;
+          this.progressBar = document.querySelector(".progress-bar");
+          this.nav = document.querySelector(".nav-dots");
+          this.touchStartY = 0;
+          this.touchEndY = 0;
+          this.isAnimating = false;
+          this.setupIntersectionObserver();
+          this.setupNavDots();
+          this.setupKeyboardNav();
+          this.setupWheelNav();
+          this.setupTouchNav();
+          this.updateProgress();
+        }
+
+        setupIntersectionObserver() {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add("visible");
+                  const index = this.slides.indexOf(entry.target);
+                  if (index >= 0) {
+                    this.currentSlide = index;
+                    this.updateDots();
+                    this.updateProgress();
+                  }
+                }
+              });
+            },
+            { threshold: 0.6 }
+          );
+
+          this.slides.forEach((slide) => observer.observe(slide));
+        }
+
+        setupNavDots() {
+          this.slides.forEach((slide, index) => {
+            const dot = document.createElement("button");
+            dot.type = "button";
+            dot.setAttribute("aria-label", `Go to slide ${index + 1}`);
+            dot.addEventListener("click", () => this.goToSlide(index));
+            this.nav.appendChild(dot);
+          });
+          this.updateDots();
+        }
+
+        updateDots() {
+          Array.from(this.nav.children).forEach((dot, index) => {
+            dot.classList.toggle("active", index === this.currentSlide);
+          });
+        }
+
+        updateProgress() {
+          const ratio = ((this.currentSlide + 1) / this.slides.length) * 100;
+          this.progressBar.style.setProperty("--progress", `${ratio}%`);
+        }
+
+        goToSlide(index) {
+          const clamped = Math.max(0, Math.min(index, this.slides.length - 1));
+          this.currentSlide = clamped;
+          this.isAnimating = true;
+          this.slides[clamped].scrollIntoView({ behavior: "smooth", block: "start" });
+          window.setTimeout(() => {
+            this.isAnimating = false;
+          }, 700);
+          this.updateDots();
+          this.updateProgress();
+        }
+
+        nextSlide() {
+          if (this.isAnimating) return;
+          this.goToSlide(this.currentSlide + 1);
+        }
+
+        previousSlide() {
+          if (this.isAnimating) return;
+          this.goToSlide(this.currentSlide - 1);
+        }
+
+        setupKeyboardNav() {
+          document.addEventListener("keydown", (event) => {
+            if (["ArrowDown", "PageDown", " ", "Enter"].includes(event.key)) {
+              event.preventDefault();
+              this.nextSlide();
+            }
+            if (["ArrowUp", "PageUp", "Backspace"].includes(event.key)) {
+              event.preventDefault();
+              this.previousSlide();
+            }
+            if (event.key === "Home") {
+              event.preventDefault();
+              this.goToSlide(0);
+            }
+            if (event.key === "End") {
+              event.preventDefault();
+              this.goToSlide(this.slides.length - 1);
+            }
+          });
+        }
+
+        setupWheelNav() {
+          let lastWheel = 0;
+          window.addEventListener(
+            "wheel",
+            (event) => {
+              const now = Date.now();
+              if (now - lastWheel < 650) return;
+              if (Math.abs(event.deltaY) < 30) return;
+              lastWheel = now;
+              if (event.deltaY > 0) this.nextSlide();
+              if (event.deltaY < 0) this.previousSlide();
+            },
+            { passive: true }
+          );
+        }
+
+        setupTouchNav() {
+          window.addEventListener(
+            "touchstart",
+            (event) => {
+              this.touchStartY = event.changedTouches[0].screenY;
+            },
+            { passive: true }
+          );
+
+          window.addEventListener(
+            "touchend",
+            (event) => {
+              this.touchEndY = event.changedTouches[0].screenY;
+              const delta = this.touchStartY - this.touchEndY;
+              if (Math.abs(delta) < 60) return;
+              if (delta > 0) this.nextSlide();
+              if (delta < 0) this.previousSlide();
+            },
+            { passive: true }
+          );
+        }
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        new SlidePresentation();
+      });
+    </script>
+  </body>
+</html>

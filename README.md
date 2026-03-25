@@ -63,14 +63,18 @@ flowchart TD
 
 ## Metrics
 
-- `sharpness`: Laplacian variance
-- `noise`: 区域灰度标准差
-- `exposure`: HSV `V` channel mean
+- `Laplacian_Clarity`: Laplacian 方差，表示整体清晰度
+- `EdgeGrad_mean`: Sobel 梯度均值，表示边缘锐度
+- `sigma_L`: 区域灰度标准差，表示亮度噪声
+- `sigma_C`: YCrCb 色度通道波动，表示色度噪声
 
 区域得分：
 
 ```text
-score = 0.4 * sharpness_score + 0.3 * noise_score + 0.3 * exposure_score
+score = 0.35 * Laplacian_Clarity_score
+      + 0.25 * EdgeGrad_mean_score
+      + 0.2 * sigma_L_score
+      + 0.2 * sigma_C_score
 ```
 
 最终得分：
@@ -152,18 +156,20 @@ Response:
 {
   "request_id": "20260324_abcd1234",
   "global_metrics": {
-    "sharpness": 123.4,
-    "noise": 10.2,
-    "exposure": 135.0,
+    "Laplacian_Clarity": 123.4,
+    "EdgeGrad_mean": 48.0,
+    "sigma_L": 10.2,
+    "sigma_C": 6.8,
     "score": 82.1,
     "coverage_ratio": 1.0,
     "valid": true
   },
   "region_metrics": {
     "person": {
-      "sharpness": 130.0,
-      "noise": 8.0,
-      "exposure": 140.0,
+      "Laplacian_Clarity": 130.0,
+      "EdgeGrad_mean": 51.0,
+      "sigma_L": 8.0,
+      "sigma_C": 5.4,
       "score": 86.0,
       "coverage_ratio": 0.22,
       "valid": true
